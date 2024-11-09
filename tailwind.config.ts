@@ -10,13 +10,6 @@ const config: Config = {
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    stickyStack: {
-      0: "0",
-      1: "1rem",
-      2: "2rem",
-      3: "3rem",
-      4: "4rem",
-    },
     stickyOffset: {
       0: "0",
       1: "1rem",
@@ -41,36 +34,48 @@ const config: Config = {
     plugin(function ({ matchUtilities, theme, addBase, addUtilities }) {
       addBase({
         ":root": {
-          "--header": "56px",
-          "--sticky-base": "0",
-          "--sticky-height": "4rem",
-          counterReset: "sticky-stack",
+          "--header": "0",
+          "--navigation": "0",
+          "--sidebar": "0",
+          "--header-height": "4rem",
+          "--navigation-height": "56px",
+        },
+        "body:has(.stack-header)": {
+          "--header": "1",
+        },
+        "body:has(.stack-navigation)": {
+          "--navigation": "1",
+        },
+        "body:has(.stack-sidebar)": {
+          "--sidebar": "1",
         },
       });
-      // Container and element utilities
+      // Stack utilities
       addUtilities({
-        ".sticky-container": {
-          contentVisibility: "auto",
-          containIntrinsicSize: "auto",
-        },
-        ".sticky-element": {
+        ".stack-header": {
           position: "sticky",
-          counterIncrement: "sticky-stack",
-          top: "calc(var(--sticky-base) + (counter(sticky-stack) - 1) * var(--sticky-height))",
+          top: "0",
+        },
+        ".stack-navigation": {
+          position: "sticky",
+          top: "calc(var(--header) * var(--header-height))",
+        },
+        ".stack-sidebar": {
+          position: "sticky",
+          top: "calc(var(--header, 0) * var(--header-height, 0px) + var(--navigation, 0) * var(--navigation-height, 0px) + var(--sticky-offset, 0px))",
         },
       });
-      // Match utilities for custom sticky offsets
+
+      // Height utilities
       matchUtilities(
         {
-          "sticky-height": (value) => ({
-            "--sticky-height": value,
-          }),
-          "sticky-offset": (value) => ({
-            position: "sticky",
-            top: value,
-          }),
+          "sticky-offset": (modifier) => {
+            return {
+              "--sticky-offset": modifier,
+            };
+          },
         },
-        { values: theme("stickyStack") }
+        { values: theme("stickyOffset") }
       );
     }),
   ],

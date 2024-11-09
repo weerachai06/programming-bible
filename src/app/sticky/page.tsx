@@ -193,7 +193,7 @@ const HeaderSearch = () => {
 
 const Navigation = () => {
   return (
-    <nav className="col-span-2 bg-gray-800 text-white p-4 sticky top-0 c">
+    <nav className="col-span-2 bg-gray-800 text-white p-4 stack-navigation">
       <ul className="flex gap-4 container mx-auto">
         <li>
           <a href="#" className="hover:text-gray-300">
@@ -223,25 +223,7 @@ const Navigation = () => {
 const Sidebar = () => {
   return (
     <aside className="w-full min-h-0">
-      <section className="sticky top-[calc(var(--header)+((164px+16px)*0)+16px)] bg-white shadow-md rounded p-4">
-        <h2 className="text-xl font-bold mb-4">Categories</h2>
-        <ul className="space-y-2">
-          <li>React</li>
-          <li>TypeScript</li>
-          <li>CSS</li>
-        </ul>
-      </section>
-
-      <section className="sticky top-[calc(var(--header)+((164px+16px)*1)+16px)] bg-white shadow-md rounded p-4 mt-10">
-        <h2 className="text-xl font-bold mb-4">Tags</h2>
-        <ul className="space-y-2">
-          <li>React</li>
-          <li>TypeScript</li>
-          <li>CSS</li>
-        </ul>
-      </section>
-
-      <section className="sticky top-[calc(var(--header)+((164px+16px)*2)+16px)] bg-white shadow-md rounded p-4 mt-10">
+      <section className="stack-sidebar sticky-offset-1 bg-white shadow-md rounded p-4">
         <h2 className="text-xl font-bold mb-4">Recent Posts</h2>
         <ul className="space-y-2">
           <li>Getting Started with React</li>
