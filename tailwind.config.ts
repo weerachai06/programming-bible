@@ -1,5 +1,5 @@
 import type { Config } from "tailwindcss";
-import plugin from "tailwindcss/plugin";
+import stickyPlugin from "@/lib/tailwind";
 
 const config: Config = {
   content: [
@@ -30,54 +30,6 @@ const config: Config = {
       },
     },
   },
-  plugins: [
-    plugin(function ({ matchUtilities, theme, addBase, addUtilities }) {
-      addBase({
-        ":root": {
-          "--header": "0",
-          "--navigation": "0",
-          "--sidebar": "0",
-          "--header-height": "4rem",
-          "--navigation-height": "56px",
-        },
-        "body:has(.stack-header)": {
-          "--header": "1",
-        },
-        "body:has(.stack-navigation)": {
-          "--navigation": "1",
-        },
-        "body:has(.stack-sidebar)": {
-          "--sidebar": "1",
-        },
-      });
-      // Stack utilities
-      addUtilities({
-        ".stack-header": {
-          position: "sticky",
-          top: "0",
-        },
-        ".stack-navigation": {
-          position: "sticky",
-          top: "calc(var(--header) * var(--header-height))",
-        },
-        ".stack-sidebar": {
-          position: "sticky",
-          top: "calc(var(--header, 0) * var(--header-height, 0px) + var(--navigation, 0) * var(--navigation-height, 0px) + var(--sticky-offset, 0px))",
-        },
-      });
-
-      // Height utilities
-      matchUtilities(
-        {
-          "sticky-offset": (modifier) => {
-            return {
-              "--sticky-offset": modifier,
-            };
-          },
-        },
-        { values: theme("stickyOffset") }
-      );
-    }),
-  ],
+  plugins: [stickyPlugin],
 };
 export default config;
