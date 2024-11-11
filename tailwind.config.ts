@@ -1,5 +1,5 @@
 import type { Config } from "tailwindcss";
-import stickyPlugin from "@/lib/tailwind";
+import stickyPlugin from "./src/lib/tailwind";
 
 const config: Config = {
   content: [
@@ -11,7 +11,7 @@ const config: Config = {
   ],
   theme: {
     stickyOffset: {
-      0: "0",
+      0: "0px",
       1: "1rem",
       2: "2rem",
       3: "3rem",
@@ -30,6 +30,6 @@ const config: Config = {
       },
     },
   },
-  plugins: [stickyPlugin],
+  plugins: [stickyPlugin(["navigation", "sidebar", "footer"]).plugin],
 };
 export default config;

@@ -1,5 +1,7 @@
 "use client";
 
+import { createStickyStyles } from "@/lib/tailwind";
+
 interface BlogPost {
   id: number;
   title: string;
@@ -193,7 +195,10 @@ const HeaderSearch = () => {
 
 const Navigation = () => {
   return (
-    <nav className="col-span-2 bg-gray-800 text-white p-4 stack-navigation">
+    <nav
+      style={createStickyStyles({ height: "56px", id: "navigation" })}
+      className="sticky-stack-navigation sticky-offset-0 col-span-2 bg-gray-800 text-white p-4"
+    >
       <ul className="flex gap-4 container mx-auto">
         <li>
           <a href="#" className="hover:text-gray-300">
@@ -223,7 +228,10 @@ const Navigation = () => {
 const Sidebar = () => {
   return (
     <aside className="w-full min-h-0">
-      <section className="stack-sidebar sticky-offset-1 bg-white shadow-md rounded p-4">
+      <section
+        style={createStickyStyles({ id: "sidebar" })}
+        className="sticky-stack-sidebar sticky-offset-0 bg-white shadow-md rounded p-4"
+      >
         <h2 className="text-xl font-bold mb-4">Recent Posts</h2>
         <ul className="space-y-2">
           <li>Getting Started with React</li>
