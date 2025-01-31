@@ -81,4 +81,6 @@ class PerformantCache {
   }
 }
 
+export { PerformantCache };
+
 export const performantCache = new PerformantCache();

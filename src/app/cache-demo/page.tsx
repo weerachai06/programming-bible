@@ -1,3 +1,4 @@
+import { PerformantCache } from "@/helpers/asyncCache";
 import React from "react";
 // import { unstable_cache as cache } from "next/cache";
 
@@ -13,20 +14,28 @@ interface PokenInternalInterface {
 
 export const dynamic = "force-dynamic";
 
+const performantCache = new PerformantCache({ maxSize: 10, ttl: 1000 * 60 });
+
 const getPokemonList = async (): Promise<PokenInternalInterface> => {
-  const url = new URL("/api", "http://localhost:3000").toString();
-  const res = await fetch(url);
+  console.log("Fetching data");
+  const res = await fetch("https://pokeapi.co/api/v2/pokemon");
   const data = await res.json();
-  return data;
+  console.log({ data });
+
+  return {
+    data: data.results,
+    uuid: Math.random().toString(36).substring(7, 14),
+  };
 };
 
-// const getCachedPokemonList = cache(getPokemonList, ["pokemonList"], {
-//   revalidate: 10,
-//   tags: ["pokemonList"],
-// });
+const getPokemonListCached = async () => {
+  return performantCache.storage.run(performantCache.cache, () =>
+    performantCache.withCache("pokemonList", getPokemonList)
+  );
+};
 
 async function MyPage() {
-  const data = await getPokemonList();
+  const data = await getPokemonListCached();
 
   return (
     <div>
