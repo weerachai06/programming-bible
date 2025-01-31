@@ -30,6 +30,6 @@ const config: Config = {
       },
     },
   },
-  plugins: [stickyPlugin(["navigation", "sidebar", "footer"]).plugin],
+  plugins: [stickyPlugin().plugin],
 };
 export default config;

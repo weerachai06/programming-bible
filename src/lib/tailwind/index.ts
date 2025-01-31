@@ -5,18 +5,22 @@ const STICKY_VARIABLES_CONFIG = {
   offsetSuffix: "offset",
   heightSuffix: "height",
   classNamePrefix: "sticky-stack",
-};
+} as const;
 
-const stickyIds = ["header", "navigation", "sidebar", "footer"] as const;
+const internalVariables = {
+  stickyOffset: "sticky-offset",
+  stickyHeight: "sticky-height",
+  stickyStack: "sticky-stack",
+  stickyCurrentId: "sticky-current",
+} as const;
 
 interface CreateStickyParams {
-  id: (typeof stickyIds)[number];
   height?: string;
 }
 
 export const createStickyStyles = (params: CreateStickyParams) => {
-  const { id, height: _height = 0 } = params || {};
-  const heightVariable = `--${STICKY_VARIABLES_CONFIG.prefix}-${id}-${STICKY_VARIABLES_CONFIG.heightSuffix}`;
+  const { height: _height = 0 } = params || {};
+  const heightVariable = `--${STICKY_VARIABLES_CONFIG.prefix}-${STICKY_VARIABLES_CONFIG.heightSuffix}`;
 
   const height = typeof _height === "string" ? _height : `${_height}px`;
 
@@ -25,59 +29,16 @@ export const createStickyStyles = (params: CreateStickyParams) => {
   };
 };
 
-const createStickyConfigurations = <TStickyId extends string>(
-  ids: TStickyId[]
-) => {
+const createStickyConfigurations = () => {
   return {
-    plugin: plugin(({ addBase, matchUtilities, addUtilities, theme }) => {
-      const initRootVariables = ids.reduce((acc, id) => {
-        return {
-          ...acc,
-          [`--${STICKY_VARIABLES_CONFIG.prefix}-${id}`]: "0",
-          [`--${STICKY_VARIABLES_CONFIG.prefix}-${id}-${STICKY_VARIABLES_CONFIG.heightSuffix}`]:
-            "0px",
-        };
-      }, {});
-
-      const hasBaseSelector = ids.reduce((acc, id) => {
-        const baseSelector = `body:has(.${STICKY_VARIABLES_CONFIG.classNamePrefix}-${id})`;
-
-        return {
-          ...acc,
-          [baseSelector]: {
-            [`--${STICKY_VARIABLES_CONFIG.prefix}-${id}`]: "1",
-          },
-        };
-      }, {});
-
-      addBase({
-        ":root": {
-          ...initRootVariables,
+    plugin: plugin(({ matchUtilities, addUtilities, theme }) => {
+      addUtilities({
+        [`.${STICKY_VARIABLES_CONFIG.classNamePrefix}`]: {
+          position: "sticky",
+          top: "var(--sticky-offset)",
+          zIndex: "100",
         },
-        ...hasBaseSelector,
       });
-
-      addUtilities(
-        ids.reduce((acc, id, index) => {
-          const className = `.${STICKY_VARIABLES_CONFIG.classNamePrefix}-${id}`;
-          const topValue = ids
-            .slice(0, index)
-            .map(
-              (prevId) =>
-                `var(--${STICKY_VARIABLES_CONFIG.prefix}-${prevId}, 0) * var(--${STICKY_VARIABLES_CONFIG.prefix}-${prevId}-${STICKY_VARIABLES_CONFIG.heightSuffix}, 0px)`
-            )
-            .concat(`var(--sticky-offset, 0px)`)
-            .join(" + ");
-
-          return {
-            ...acc,
-            [className]: {
-              position: "sticky",
-              top: `calc(${topValue})`,
-            },
-          };
-        }, {})
-      );
 
       matchUtilities(
         {
@@ -88,6 +49,18 @@ const createStickyConfigurations = <TStickyId extends string>(
           },
         },
         { values: theme("stickyOffset") }
+      );
+
+      matchUtilities(
+        {
+          [internalVariables.stickyHeight]: (value) => ({
+            [`--${internalVariables.stickyHeight}`]: `calc(${value})`,
+            "& + *": {
+              "--sticky-offset": `calc(var(--sticky-offset, 0px) + ${value})`,
+            },
+          }),
+        },
+        { values: theme("stickyHeight") }
       );
     }),
   };
