@@ -3,44 +3,82 @@ import { AsyncLocalStorage } from "async_hooks";
 interface CacheStore {
   data: unknown;
   expiry: number;
+  lastAccessed: number;
 }
 
-export const storage = new AsyncLocalStorage<Map<string, CacheStore>>();
-export const cache = new Map<string, CacheStore>();
-const timeoutMap = new Map<string, NodeJS.Timeout>();
-const CACHE_TTL = 5 * 1000; // 1 hour in milliseconds
+interface CacheConfig {
+  maxSize: number;
+  ttl: number;
+}
 
-export const withCache = async <T>(
-  key: string,
-  fn: () => Promise<T>
-): Promise<T> => {
-  const store = storage.getStore() || cache;
+class PerformantCache {
+  public cache: Map<string, CacheStore>;
+  public storage: AsyncLocalStorage<Map<string, CacheStore>>;
+  private timeouts: Map<string, NodeJS.Timeout>;
+  private config: CacheConfig;
 
-  const now = Date.now();
-  console.log(`store: ${storage.getStore()?.size}`, `cache: ${cache.size}`);
-  const cached = store.get(key);
-
-  if (cached && cached.expiry > now) {
-    console.log("Cache hit:", key);
-    return cached.data as T;
+  constructor(config: CacheConfig = { maxSize: 100, ttl: 5000 }) {
+    this.storage = new AsyncLocalStorage();
+    this.cache = new Map();
+    this.timeouts = new Map();
+    this.config = config;
   }
 
-  console.log("Cache miss:", key);
-
-  const existingTimeout = timeoutMap.get(key);
-  if (existingTimeout) {
-    clearTimeout(existingTimeout);
+  private evictLRU() {
+    if (this.cache.size >= this.config.maxSize) {
+      const entries = Array.from(this.cache.entries());
+      const oldest = entries.reduce((a, b) =>
+        a[1].lastAccessed < b[1].lastAccessed ? a : b
+      );
+      this.delete(oldest[0]);
+    }
   }
 
-  const data = await fn();
-  store.set(key, {
-    data,
-    expiry: now + CACHE_TTL,
-  });
+  private delete(key: string) {
+    const timeout = this.timeouts.get(key);
+    if (timeout) clearTimeout(timeout);
+    this.timeouts.delete(key);
+    this.cache.delete(key);
+  }
 
-  const timeout = setTimeout(() => store.delete(key), CACHE_TTL);
+  async withCache<T>(key: string, fn: () => Promise<T>): Promise<T> {
+    try {
+      const store = this.storage.getStore() || this.cache;
+      const now = Date.now();
+      const cached = store.get(key);
 
-  timeoutMap.set(key, timeout);
+      if (cached && cached.expiry > now) {
+        console.log(`Cache hit for key ${key}`);
+        store.set(key, { ...cached, lastAccessed: now });
+        return cached.data as T;
+      }
 
-  return data;
-};
+      this.evictLRU();
+      const data = await fn();
+
+      console.log(`Cache miss for key ${key}`);
+
+      const timeout = setTimeout(() => this.delete(key), this.config.ttl);
+      this.timeouts.set(key, timeout);
+
+      store.set(key, {
+        data,
+        expiry: now + this.config.ttl,
+        lastAccessed: now,
+      });
+
+      return data;
+    } catch (error) {
+      console.error(`Cache error for key ${key}:`, error);
+      throw error;
+    }
+  }
+
+  clear() {
+    this.timeouts.forEach(clearTimeout);
+    this.timeouts.clear();
+    this.cache.clear();
+  }
+}
+
+export const performantCache = new PerformantCache();

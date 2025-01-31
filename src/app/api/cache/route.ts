@@ -1,4 +1,4 @@
-import { storage, cache, withCache } from "@/helpers/asyncCache";
+import { performantCache } from "@/helpers/asyncCache";
 const CACHE_KEY = "pokemonList";
 
 const fetchPokemon = async () => {
@@ -13,8 +13,8 @@ const fetchPokemon = async () => {
 
 export async function GET() {
   try {
-    const data = await storage.run(cache, () =>
-      withCache(CACHE_KEY, fetchPokemon)
+    const data = await performantCache.storage.run(performantCache.cache, () =>
+      performantCache.withCache(CACHE_KEY, fetchPokemon)
     );
 
     return Response.json(data);

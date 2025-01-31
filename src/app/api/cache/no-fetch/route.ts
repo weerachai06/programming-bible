@@ -1,7 +1,9 @@
-import { cache, storage } from "@/helpers/asyncCache";
+import { performantCache } from "@/helpers/asyncCache";
 
 export const GET = async () => {
-  const data = storage.run(cache, () => storage.getStore());
+  const data = performantCache.storage.run(performantCache.cache, () =>
+    performantCache.storage.getStore()
+  );
 
   const pokemon = data?.get("pokemonList");
 
