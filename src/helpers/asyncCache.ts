@@ -30,26 +30,6 @@ const cache = new Map<string, string>();
 // In seconds
 const MINITE_REVALIDATE = 60;
 
-const MEMORY_LIMITS = {
-  WARNING: 75 * 1024 * 1024, // 75MB
-  CRITICAL: 100 * 1024 * 1024, // 100MB
-  MAX_CACHE_SIZE: 50, // items
-};
-
-const cleanupMemory = (onCleanup: () => void) => {
-  const memoryUsage = process.memoryUsage();
-  if (memoryUsage.heapUsed > MEMORY_LIMITS.WARNING) {
-    console.warn(
-      `Memory usage high: ${Math.round(memoryUsage.heapUsed / 1024 / 1024)} MB`
-    );
-  }
-
-  if (memoryUsage.heapUsed > MEMORY_LIMITS.CRITICAL) {
-    console.warn("Memory threshold exceeded - cache cleared");
-    onCleanup();
-  }
-};
-
 const unstable_cache = <T extends Callback>(
   key: string,
   callback: T,
