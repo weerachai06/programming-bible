@@ -1,4 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unsafe-function-type */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { AsyncLocalStorage } from "async_hooks";
+
+type Callback = (...args: any[]) => Promise<any>;
 
 interface CacheStore {
   data: unknown;
@@ -8,79 +12,82 @@ interface CacheStore {
 
 interface CacheConfig {
   maxSize: number;
-  ttl: number;
+  // In seconds
+  revalidate: number;
 }
 
-class PerformantCache {
-  public cache: Map<string, CacheStore>;
-  public storage: AsyncLocalStorage<Map<string, CacheStore>>;
-  private timeouts: Map<string, NodeJS.Timeout>;
-  private config: CacheConfig;
+type StringKeyValueMap = Map<string, string>;
 
-  constructor(config: CacheConfig = { maxSize: 100, ttl: 5000 }) {
-    this.storage = new AsyncLocalStorage();
-    this.cache = new Map();
-    this.timeouts = new Map();
-    this.config = config;
+const createAsyncLocalStorage = <T>(): AsyncLocalStorage<T> => {
+  return new AsyncLocalStorage();
+};
+
+export const staticGenerationAsyncStorage =
+  createAsyncLocalStorage<StringKeyValueMap>();
+
+const cache = new Map<string, string>();
+
+// In seconds
+const MINITE_REVALIDATE = 60;
+
+const MEMORY_LIMITS = {
+  WARNING: 75 * 1024 * 1024, // 75MB
+  CRITICAL: 100 * 1024 * 1024, // 100MB
+  MAX_CACHE_SIZE: 50, // items
+};
+
+const cleanupMemory = (onCleanup: () => void) => {
+  const memoryUsage = process.memoryUsage();
+  if (memoryUsage.heapUsed > MEMORY_LIMITS.WARNING) {
+    console.warn(
+      `Memory usage high: ${Math.round(memoryUsage.heapUsed / 1024 / 1024)} MB`
+    );
   }
 
-  private evictLRU() {
-    if (this.cache.size >= this.config.maxSize) {
-      const entries = Array.from(this.cache.entries());
-      const oldest = entries.reduce((a, b) =>
-        a[1].lastAccessed < b[1].lastAccessed ? a : b
-      );
-      this.delete(oldest[0]);
-    }
+  if (memoryUsage.heapUsed > MEMORY_LIMITS.CRITICAL) {
+    console.warn("Memory threshold exceeded - cache cleared");
+    onCleanup();
   }
+};
 
-  private delete(key: string) {
-    const timeout = this.timeouts.get(key);
-    if (timeout) clearTimeout(timeout);
-    this.timeouts.delete(key);
-    this.cache.delete(key);
-  }
-
-  async withCache<T>(key: string, fn: () => Promise<T>): Promise<T> {
+const unstable_cache = <T extends Callback>(
+  key: string,
+  callback: T,
+  config: CacheConfig = { maxSize: 100, revalidate: MINITE_REVALIDATE }
+) => {
+  const cachedCallback = async (...args: any[]) => {
     try {
-      const store = this.storage.getStore() || this.cache;
-      const now = Date.now();
+      const store = staticGenerationAsyncStorage.getStore() || cache;
+      const nowSecond = Date.now() / 1000;
+      // cleanupMemory(() => store.delete(key));
       const cached = store.get(key);
+      const parsedCache: CacheStore = cached ? JSON.parse(cached) : null;
 
-      if (cached && cached.expiry > now) {
-        console.log(`Cache hit for key ${key}`);
-        store.set(key, { ...cached, lastAccessed: now });
-        return cached.data as T;
+      if (cached && parsedCache.expiry > nowSecond) {
+        return parsedCache.data as T;
       }
 
-      this.evictLRU();
-      const data = await fn();
-
-      console.log(`Cache miss for key ${key}`);
-
-      const timeout = setTimeout(() => this.delete(key), this.config.ttl);
-      this.timeouts.set(key, timeout);
-
-      store.set(key, {
+      const data = await staticGenerationAsyncStorage.run(
+        cache,
+        callback,
+        ...args
+      );
+      const cachedItem = {
         data,
-        expiry: now + this.config.ttl,
-        lastAccessed: now,
-      });
+        expiry: nowSecond + config.revalidate,
+        lastAccessed: nowSecond,
+      };
+
+      store.set(key, JSON.stringify(cachedItem));
 
       return data;
     } catch (error) {
       console.error(`Cache error for key ${key}:`, error);
       throw error;
     }
-  }
+  };
 
-  clear() {
-    this.timeouts.forEach(clearTimeout);
-    this.timeouts.clear();
-    this.cache.clear();
-  }
-}
+  return cachedCallback as unknown as T;
+};
 
-export { PerformantCache };
-
-export const performantCache = new PerformantCache();
+export { unstable_cache };

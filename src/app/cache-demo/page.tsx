@@ -1,4 +1,6 @@
-import { PerformantCache } from "@/helpers/asyncCache";
+/* eslint-disable @typescript-eslint/no-unsafe-function-type */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { unstable_cache } from "@/helpers/asyncCache";
 import React from "react";
 // import { unstable_cache as cache } from "next/cache";
 
@@ -14,13 +16,10 @@ interface PokenInternalInterface {
 
 export const dynamic = "force-dynamic";
 
-const performantCache = new PerformantCache({ maxSize: 10, ttl: 1000 * 60 });
-
 const getPokemonList = async (): Promise<PokenInternalInterface> => {
   console.log("Fetching data");
   const res = await fetch("https://pokeapi.co/api/v2/pokemon");
   const data = await res.json();
-  console.log({ data });
 
   return {
     data: data.results,
@@ -28,11 +27,10 @@ const getPokemonList = async (): Promise<PokenInternalInterface> => {
   };
 };
 
-const getPokemonListCached = async () => {
-  return performantCache.storage.run(performantCache.cache, () =>
-    performantCache.withCache("pokemonList", getPokemonList)
-  );
-};
+const getPokemonListCached = unstable_cache("pokemonList", getPokemonList, {
+  maxSize: 10,
+  revalidate: 5, // 5 seconds
+});
 
 async function MyPage() {
   const data = await getPokemonListCached();
