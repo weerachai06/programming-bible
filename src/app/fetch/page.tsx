@@ -18,7 +18,7 @@ async function Posts() {
   }>("http://localhost:3000/api/posts", {
     next: {
       tags: ["posts"],
-      revalidate: 10,
+      revalidate: 10000,
     },
   });
 

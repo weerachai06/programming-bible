@@ -8,12 +8,14 @@ export interface Post {
   timestamp: string;
 }
 
-const MOCK_POSTS: Post[] = Array.from({ length: 10 }, (_, i) => ({
-  id: i + 1,
-  title: `Post ${Math.random().toString(36).substring(7)}`,
-  body: `This is the body of post ${i + 1}`,
-  timestamp: new Date().toISOString(),
-}));
+const generateMockPosts = (length: number) => {
+  return Array.from({ length }, (_, i) => ({
+    id: i + 1,
+    title: `Post ${Math.random().toString(36).substring(7)}`,
+    body: `This is the body of post ${i + 1}`,
+    timestamp: new Date().toISOString(),
+  }));
+};
 
 export async function GET() {
   const headersList = await headers();
@@ -22,7 +24,7 @@ export async function GET() {
 
   return NextResponse.json(
     {
-      data: MOCK_POSTS,
+      data: generateMockPosts(20),
       meta: {
         timestamp: new Date().toISOString(),
         cache: {
