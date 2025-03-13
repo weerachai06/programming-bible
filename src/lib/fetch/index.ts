@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 // Types for interceptors and request configuration
-interface RequestConfig {
+interface RequestConfig extends RequestInit {
   method?: string;
   headers?: Record<string, string>;
   body?: any;
@@ -321,5 +321,10 @@ class FetchClient {
 
 // Create and export a default instance
 const http = new FetchClient();
+
+http.interceptors.response.use(async (response) => {
+  console.log("Response received:", response.ok);
+  return response;
+});
 
 export { FetchClient, http };
