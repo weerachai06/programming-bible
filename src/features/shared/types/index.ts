@@ -12,5 +12,11 @@ export interface TabsProps {
   children?: React.ReactNode;
 }
 
+export interface SelectOption {
+  value: string | number;
+  label: string;
+  disabled?: boolean;
+}
+
 // Re-export common types
 export type { VariantProps } from "class-variance-authority";
