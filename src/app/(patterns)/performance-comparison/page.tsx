@@ -144,17 +144,79 @@ export default function PerformanceComparisonPage() {
             <div className="text-blue-800 text-sm">
               {activeTab === "windowing" && (
                 <div>
-                  <p className="mb-2">
-                    <strong>Technique:</strong> Virtual scrolling - only renders
-                    visible items (~20-30) and simulates scroll height.
+                  <p className="mb-3">
+                    <strong>Technique:</strong> Virtual scrolling - คำนวณและ
+                    render เฉพาะ items ที่มองเห็นได้ใน viewport (~20-30 items)
+                    และจำลอง scroll height
                   </p>
+
+                  <div className="mb-3 p-3 bg-white rounded border border-blue-100">
+                    <h5 className="font-semibold text-blue-900 mb-2">
+                      🔢 สูตรการคำนวณ Windowing:
+                    </h5>
+                    <div className="space-y-2 text-xs font-mono">
+                      <div>
+                        <strong>1. หา Start Index:</strong>
+                        <br />
+                        <code className="bg-gray-100 px-2 py-1 rounded">
+                          startIndex = Math.max(0, Math.floor(scrollTop /
+                          ITEM_HEIGHT) - OVERSCAN)
+                        </code>
+                      </div>
+                      <div>
+                        <strong>2. หา End Index:</strong>
+                        <br />
+                        <code className="bg-gray-100 px-2 py-1 rounded">
+                          endIndex = Math.min(totalItems - 1,
+                          Math.floor((scrollTop + containerHeight) /
+                          ITEM_HEIGHT) + OVERSCAN)
+                        </code>
+                      </div>
+                      <div>
+                        <strong>3. คำนวณ Total Height:</strong>
+                        <br />
+                        <code className="bg-gray-100 px-2 py-1 rounded">
+                          totalHeight = totalItems × ITEM_HEIGHT
+                        </code>
+                      </div>
+                      <div>
+                        <strong>4. คำนวณ Offset Position:</strong>
+                        <br />
+                        <code className="bg-gray-100 px-2 py-1 rounded">
+                          offsetY = startIndex × ITEM_HEIGHT
+                        </code>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mb-3 p-3 bg-white rounded border border-blue-100">
+                    <h5 className="font-semibold text-blue-900 mb-2">
+                      📊 ค่าคงที่ที่ใช้:
+                    </h5>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <strong>ITEM_HEIGHT:</strong> 120px
+                      </div>
+                      <div>
+                        <strong>CONTAINER_HEIGHT:</strong> 384px
+                      </div>
+                      <div>
+                        <strong>OVERSCAN:</strong> 5 items
+                      </div>
+                      <div>
+                        <strong>Visible Items:</strong> ~3-4 items
+                      </div>
+                    </div>
+                  </div>
+
                   <p className="mb-2">
-                    <strong>Impact:</strong> Dramatically reduces DOM size,
-                    memory usage, and browser work regardless of total items.
+                    <strong>Impact:</strong> ลดขนาด DOM, การใช้ memory
+                    และการทำงานของ browser อย่างมากโดยไม่ขึ้นกับจำนวน items
+                    ทั้งหมด
                   </p>
                   <p>
-                    <strong>Result:</strong> Consistent performance whether you
-                    have 100 or 100,000 items.
+                    <strong>Result:</strong> Performance สม่ำเสมอไม่ว่าจะมี 100
+                    หรือ 100,000 items ก็ตาม
                   </p>
                 </div>
               )}
@@ -214,6 +276,141 @@ export default function PerformanceComparisonPage() {
 
           {/* Usage Guide */}
           <UsageGuide activeTab={activeTab} />
+
+          {/* Detailed Windowing Explanation */}
+          {activeTab === "windowing" && (
+            <div className="mt-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200 p-6">
+              <h3 className="text-xl font-bold text-blue-900 mb-4">
+                🧮 การทำงานของ Windowing Technique แบบละเอียด
+              </h3>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="font-semibold text-blue-800 mb-3">
+                    📐 หลักการคำนวณ
+                  </h4>
+                  <div className="space-y-3 text-sm">
+                    <div className="p-3 bg-white rounded border border-blue-100">
+                      <strong className="text-blue-700">
+                        Step 1: คำนวณ Visible Range
+                      </strong>
+                      <p className="mt-1 text-gray-700">
+                        ใช้ position ของ scroll และความสูงของ container
+                        เพื่อหาว่า items ตัวไหนที่ควรจะมองเห็น
+                      </p>
+                      <code className="block mt-2 text-xs bg-gray-100 p-2 rounded">
+                        visibleStart = scrollTop ÷ itemHeight
+                        <br />
+                        visibleEnd = (scrollTop + containerHeight) ÷ itemHeight
+                      </code>
+                    </div>
+
+                    <div className="p-3 bg-white rounded border border-blue-100">
+                      <strong className="text-blue-700">
+                        Step 2: เพิ่ม Overscan Buffer
+                      </strong>
+                      <p className="mt-1 text-gray-700">
+                        เพิ่ม items พิเศษก่อนและหลัง visible range เพื่อการ
+                        scroll ที่ smooth
+                      </p>
+                      <code className="block mt-2 text-xs bg-gray-100 p-2 rounded">
+                        startIndex = visibleStart - OVERSCAN
+                        <br />
+                        endIndex = visibleEnd + OVERSCAN
+                      </code>
+                    </div>
+
+                    <div className="p-3 bg-white rounded border border-blue-100">
+                      <strong className="text-blue-700">
+                        Step 3: จำลอง Total Height
+                      </strong>
+                      <p className="mt-1 text-gray-700">
+                        สร้าง container ที่มีความสูงเท่ากับ items ทั้งหมด
+                        เพื่อให้ scrollbar ทำงานปกติ
+                      </p>
+                      <code className="block mt-2 text-xs bg-gray-100 p-2 rounded">
+                        totalHeight = totalItems × itemHeight
+                      </code>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="font-semibold text-blue-800 mb-3">
+                    ⚡ ข้อดีของเทคนิคนี้
+                  </h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-start gap-2">
+                      <span className="text-green-600 mt-0.5">✅</span>
+                      <div>
+                        <strong>Memory Efficient:</strong> ใช้ memory
+                        คงที่ไม่ว่าจะมี items เท่าไหร่
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="text-green-600 mt-0.5">✅</span>
+                      <div>
+                        <strong>Fast Rendering:</strong> Browser render เฉพาะ
+                        items ที่ต้องการ
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="text-green-600 mt-0.5">✅</span>
+                      <div>
+                        <strong>Smooth Scrolling:</strong> Overscan buffer ทำให้
+                        scroll ไม่กระตุก
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="text-green-600 mt-0.5">✅</span>
+                      <div>
+                        <strong>Scalable:</strong> Performance เหมือนเดิมแม้
+                        data เพิ่มขึ้น
+                      </div>
+                    </div>
+                  </div>
+
+                  <h4 className="font-semibold text-blue-800 mb-3 mt-4">
+                    🎯 เมื่อไหร่ควรใช้
+                  </h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-start gap-2">
+                      <span className="text-blue-600 mt-0.5">💡</span>
+                      <div>รายการที่มี items มากกว่า 100+ รายการ</div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="text-blue-600 mt-0.5">💡</span>
+                      <div>Items มีขนาดความสูงคงที่ (Fixed Height)</div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="text-blue-600 mt-0.5">💡</span>
+                      <div>ต้องการ performance ที่เสถียรและรวดเร็ว</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <h5 className="font-semibold text-yellow-800 mb-2">
+                  ⚠️ ข้อควรระวัง
+                </h5>
+                <ul className="text-sm text-yellow-700 space-y-1">
+                  <li>
+                    • Items ต้องมีความสูงคงที่ (ITEM_HEIGHT)
+                    เพื่อการคำนวณที่ถูกต้อง
+                  </li>
+                  <li>
+                    • ต้องจัดการ scroll event อย่างมีประสิทธิภาพ (ใช้
+                    useCallback)
+                  </li>
+                  <li>
+                    • OVERSCAN ที่มากเกินไปจะลด performance, น้อยเกินไปจะทำให้
+                    scroll กระตุก
+                  </li>
+                </ul>
+              </div>
+            </div>
+          )}
         </Tabs>
       </div>
     </div>

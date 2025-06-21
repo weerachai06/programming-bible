@@ -105,7 +105,7 @@ export const WindowedList = ({ itemCount = 10000 }: WindowedListProps) => {
       </div>
 
       <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-        <div className="grid grid-cols-2 gap-4 text-sm">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           <div>
             <p className="text-gray-600">
               <strong>Visible Range:</strong> {startIndex + 1} - {endIndex + 1}
@@ -114,14 +114,73 @@ export const WindowedList = ({ itemCount = 10000 }: WindowedListProps) => {
               <strong>Rendered Items:</strong> {visibleItems.length} /{" "}
               {items.length}
             </p>
-          </div>
-          <div>
             <p className="text-gray-600">
               <strong>Scroll Position:</strong> {Math.round(scrollTop)}px
             </p>
+          </div>
+          <div>
             <p className="text-gray-600">
               <strong>Performance:</strong> Only visible items in DOM
             </p>
+            <p className="text-gray-600">
+              <strong>Total Height:</strong> {totalHeight.toLocaleString()}px
+            </p>
+            <p className="text-gray-600">
+              <strong>Offset Y:</strong> {offsetY}px
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-3 pt-3 border-t border-gray-200">
+          <h5 className="font-semibold text-gray-700 mb-2">
+            🔢 สูตรการคำนวณ (Real-time):
+          </h5>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono">
+            <div className="space-y-1">
+              <div className="bg-blue-50 p-2 rounded border border-blue-200">
+                <strong>Start Index:</strong>
+                <br />
+                <code>
+                  Math.max(0, Math.floor({Math.round(scrollTop)} ÷ {ITEM_HEIGHT}
+                  ) - {OVERSCAN})
+                </code>
+                <br />
+                <span className="text-blue-600">= {startIndex}</span>
+              </div>
+              <div className="bg-green-50 p-2 rounded border border-green-200">
+                <strong>End Index:</strong>
+                <br />
+                <code>
+                  Math.min({items.length - 1}, Math.floor((
+                  {Math.round(scrollTop)} + {CONTAINER_HEIGHT}) ÷ {ITEM_HEIGHT})
+                  + {OVERSCAN})
+                </code>
+                <br />
+                <span className="text-green-600">= {endIndex}</span>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <div className="bg-purple-50 p-2 rounded border border-purple-200">
+                <strong>Total Height:</strong>
+                <br />
+                <code>
+                  {items.length} × {ITEM_HEIGHT}
+                </code>
+                <br />
+                <span className="text-purple-600">
+                  = {totalHeight.toLocaleString()}px
+                </span>
+              </div>
+              <div className="bg-orange-50 p-2 rounded border border-orange-200">
+                <strong>Offset Y:</strong>
+                <br />
+                <code>
+                  {startIndex} × {ITEM_HEIGHT}
+                </code>
+                <br />
+                <span className="text-orange-600">= {offsetY}px</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
