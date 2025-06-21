@@ -1,5 +1,4 @@
 import type { Config } from "tailwindcss";
-import stickyPlugin from "./src/lib/tailwind";
 
 const config: Config = {
   content: [
@@ -31,6 +30,5 @@ const config: Config = {
       },
     },
   },
-  plugins: [stickyPlugin().plugin],
 };
 export default config;
