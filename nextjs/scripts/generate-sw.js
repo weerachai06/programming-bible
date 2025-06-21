@@ -9,7 +9,6 @@ function generateServiceWorker() {
   console.log("🔧 Generating Service Worker...");
 
   // Get environment variables
-  const environment = process.env.NODE_ENV || "development";
   const version = process.env.npm_package_version || "1.0.0";
 
   // Generate cache name with timestamp for unique versioning
@@ -17,8 +16,6 @@ function generateServiceWorker() {
   const cacheName = `${version}-${timestamp}`;
 
   console.log(`📦 Cache Name: ${cacheName}`);
-  console.log(`🌍 Environment: ${environment}`);
-  console.log(`📋 Version: ${version}`);
 
   try {
     // Read template
@@ -26,10 +23,7 @@ function generateServiceWorker() {
     const template = readFileSync(templatePath, "utf8");
 
     // Replace placeholders
-    const serviceWorkerCode = template
-      .replace(/{{CACHE_NAME}}/g, cacheName)
-      .replace(/{{VERSION}}/g, version)
-      .replace(/{{ENVIRONMENT}}/g, environment);
+    const serviceWorkerCode = template.replace(/{{CACHE_NAME}}/g, cacheName);
 
     // Write to public directory
     const outputPath = join(process.cwd(), "public", "sw.js");

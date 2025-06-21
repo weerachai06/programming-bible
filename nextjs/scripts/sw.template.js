@@ -1,12 +1,6 @@
 const CACHE_NAME = "{{CACHE_NAME}}";
-const VERSION = "{{VERSION}}";
-const ENVIRONMENT = "{{ENVIRONMENT}}";
 
 const urlsToCache = ["/", "/favicon.ico", "/globe.svg"];
-
-console.log(
-  `🔧 Service Worker v${VERSION} (${ENVIRONMENT}) - Cache: ${CACHE_NAME}`
-);
 
 self.addEventListener("install", (event) => {
   console.log("🚀 Service Worker installing with cache:", CACHE_NAME);
