@@ -6,6 +6,7 @@ on:
   push:
     paths:
       - "react-design-pattern/**"
+      - ".github/workflows/production.yml"
     branches:
       - main
 jobs:
