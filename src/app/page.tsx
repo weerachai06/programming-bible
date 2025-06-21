@@ -7,6 +7,12 @@ const REACT_DESIGN_PATTERNS = [
       "A pattern that allows you to subscribe to changes in an object and get notified when the object changes.",
     link: "/observable-pattern",
   },
+  {
+    name: "Performance Comparison",
+    description:
+      "Compare different optimization techniques: No optimization vs CSS content-visibility vs Windowing technique for large lists.",
+    link: "/performance-comparison",
+  },
 ] as const;
 
 export default function Home() {
