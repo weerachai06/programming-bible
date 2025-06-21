@@ -2,7 +2,6 @@ name: GitHub Actions Vercel Production Deployment
 env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-  WORKING_DIRECTORY: ./react-design-pattern
 on:
   push:
     paths:
@@ -12,16 +11,16 @@ on:
 jobs:
   Deploy-Production:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: react-design-pattern
     steps:
       - uses: actions/checkout@v2
       - name: Install Vercel CLI
         run: npm install --global vercel@canary
       - name: Pull Vercel Environment Information
-        working-directory: ${{ env.WORKING_DIRECTORY }}
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
       - name: Build Project Artifacts
-        working-directory: ${{ env.WORKING_DIRECTORY }}
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
       - name: Deploy Project Artifacts to Vercel
-        working-directory: ${{ env.WORKING_DIRECTORY }}
         run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
