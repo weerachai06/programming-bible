@@ -8,7 +8,7 @@ A collection of development projects and learning exercises covering various pro
 
 ```
 workspace/
-├── react-design-pattern/        # React & Next.js projects
+├── nextjs/        # React & Next.js projects
 │   ├── src/                     # Source code
 │   ├── public/                  # Static assets
 │   └── package.json             # Node.js dependencies
@@ -21,7 +21,7 @@ workspace/
 ## 🎯 Current Projects
 
 ### ✅ React Design Patterns
-**Location**: `react-design-pattern/`
+**Location**: `nextjs/`
 **Tech Stack**: Next.js 15, React 19, TypeScript, Tailwind CSS v4
 
 A comprehensive learning project demonstrating various React design patterns through interactive examples.
@@ -34,7 +34,7 @@ A comprehensive learning project demonstrating various React design patterns thr
 
 **Quick Start**:
 ```bash
-cd react-design-pattern
+cd nextjs
 pnpm install
 pnpm dev
 ```
@@ -98,7 +98,7 @@ cd multi-project-workspace
 ### Navigate to Specific Projects
 ```bash
 # React project
-cd react-design-pattern
+cd nextjs
 pnpm install && pnpm dev
 
 # Future Go project
