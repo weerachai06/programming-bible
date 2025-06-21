@@ -34,7 +34,7 @@ export const UsageGuide = ({ activeTab }: UsageGuideProps) => {
             "Progressive enhancement of existing lists",
           ],
           avoid: [
-            "Very large datasets (10,000+ items)",
+            "Very large datasets (100,000+ items)",
             "Simple item templates (use windowing instead)",
             "When you need precise control over rendering",
           ],

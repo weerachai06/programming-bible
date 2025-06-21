@@ -58,7 +58,7 @@ export const NoOptimizationList = () => {
 
       <div className="mt-4 p-3 bg-gray-50 rounded-lg">
         <p className="text-sm text-gray-600">
-          <strong>Note:</strong> All 10,000 items are rendered in the DOM. This
+          <strong>Note:</strong> All 100,000 items are rendered in the DOM. This
           causes slow scrolling and high memory usage.
         </p>
       </div>

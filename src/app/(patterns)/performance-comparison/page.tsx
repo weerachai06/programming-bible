@@ -76,7 +76,7 @@ export default function PerformanceComparisonPage() {
         <div className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
             <h4 className="font-semibold text-gray-900 mb-2">Total Items</h4>
-            <p className="text-2xl font-bold text-blue-600">10,000</p>
+            <p className="text-2xl font-bold text-blue-600">100,000</p>
           </div>
           <div className="p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
             <h4 className="font-semibold text-gray-900 mb-2">
@@ -125,7 +125,7 @@ export default function PerformanceComparisonPage() {
             {activeTab === "no-optimization" && (
               <div>
                 <p className="mb-2">
-                  <strong>Technique:</strong> Renders all 10,000 items directly
+                  <strong>Technique:</strong> Renders all 100000 items directly
                   in the DOM without any optimization.
                 </p>
                 <p className="mb-2">
