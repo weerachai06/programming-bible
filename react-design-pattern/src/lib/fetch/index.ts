@@ -17,6 +17,7 @@ interface RequestConfig extends RequestInit {
   [key: string]: any;
 }
 
+// Fetch client configuration interface
 interface FetchClientConfig {
   baseURL?: string;
   headers?: Record<string, string>;
