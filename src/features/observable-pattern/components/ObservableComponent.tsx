@@ -17,7 +17,7 @@ export const ObservableComponent = () => {
       className={`w-48 h-48 border border-teal-900 border-dotted bg-slate-100 rounded-sm text-6xl text-center flex flex-col items-center justify-between p-2`}
       ref={sectionRef}
     >
-      <span>{counter}</span>
+      <span className="text-foreground">{counter}</span>
 
       {isSubscribe ? (
         <Button onClick={() => setIsSubscribe(false)} size="sm">
