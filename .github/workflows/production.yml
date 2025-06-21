@@ -15,11 +15,11 @@ jobs:
       - name: Install Vercel CLI
         run: npm install --global vercel@canary
       - name: Pull Vercel Environment Information
-        # working-directory: ${{ env.WORKING_DIRECTORY }}
+        working-directory: ${{ env.WORKING_DIRECTORY }}
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
       - name: Build Project Artifacts
-        # working-directory: ${{ env.WORKING_DIRECTORY }}
+        working-directory: ${{ env.WORKING_DIRECTORY }}
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
       - name: Deploy Project Artifacts to Vercel
-        # working-directory: ${{ env.WORKING_DIRECTORY }}
+        working-directory: ${{ env.WORKING_DIRECTORY }}
         run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
