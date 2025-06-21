@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { generateMockData } from "../helpers";
 import { ListItem } from "../types";
 import { PerformanceMetrics } from "./PerformanceMetrics";
@@ -13,11 +13,7 @@ interface ContentVisibilityListProps {
 export const ContentVisibilityList = ({
   itemCount = 10000,
 }: ContentVisibilityListProps) => {
-  const [items, setItems] = useState<ListItem[]>([]);
-
-  useEffect(() => {
-    setItems(generateMockData(itemCount));
-  }, [itemCount]);
+  const [items] = useState<ListItem[]>(() => generateMockData(itemCount));
 
   return (
     <div className="p-4">

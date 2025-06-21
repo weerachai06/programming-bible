@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { generateMockData } from "../helpers";
 import { ListItem } from "../types";
 import { PerformanceMetrics } from "./PerformanceMetrics";
@@ -13,11 +13,7 @@ interface NoOptimizationListProps {
 export const NoOptimizationList = ({
   itemCount = 10000,
 }: NoOptimizationListProps) => {
-  const [items, setItems] = useState<ListItem[]>([]);
-
-  useEffect(() => {
-    setItems(generateMockData(itemCount));
-  }, [itemCount]);
+  const [items] = useState<ListItem[]>(() => generateMockData(itemCount));
 
   return (
     <div className="p-4">
