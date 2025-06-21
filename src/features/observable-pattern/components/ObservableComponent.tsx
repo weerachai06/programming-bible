@@ -6,7 +6,7 @@ import { useFlashEffect } from "@/features/shared/hooks/useFlashEffect";
 import { Button } from "@/features/shared/components/button";
 
 export const ObservableComponent = () => {
-  const sectionRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLDivElement>(null!);
   const [isSubscribe, setIsSubscribe] = useState(true);
   const counter = useObservableCounter({ isSubscribe });
 
@@ -14,7 +14,7 @@ export const ObservableComponent = () => {
 
   return (
     <section
-      className={`w-48 h-48 border border-teal-900 border-dotted bg-slate-100 rounded text-6xl text-center flex flex-col items-center justify-between p-2`}
+      className={`w-48 h-48 border border-teal-900 border-dotted bg-slate-100 rounded-sm text-6xl text-center flex flex-col items-center justify-between p-2`}
       ref={sectionRef}
     >
       <span>{counter}</span>

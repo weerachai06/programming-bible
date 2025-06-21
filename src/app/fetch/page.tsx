@@ -27,7 +27,7 @@ async function Posts() {
       {posts.data.map((post) => (
         <div
           key={post.id}
-          className="rounded-lg border border-gray-200 p-4 shadow-sm"
+          className="rounded-lg border border-gray-200 p-4 shadow-xs"
         >
           <h2 className="mb-2 text-xl font-semibold">{post.title}</h2>
           <p className="text-gray-600">{post.body}</p>
@@ -46,13 +46,13 @@ function LoadingSkeleton() {
       {[...Array(6)].map((_, index) => (
         <div
           key={index}
-          className="animate-pulse rounded-lg border border-gray-200 p-4 shadow-sm"
+          className="animate-pulse rounded-lg border border-gray-200 p-4 shadow-xs"
         >
-          <div className="mb-2 h-6 w-3/4 rounded bg-gray-200" />
+          <div className="mb-2 h-6 w-3/4 rounded-sm bg-gray-200" />
           <div className="space-y-2">
-            <div className="h-4 w-full rounded bg-gray-200" />
-            <div className="h-4 w-5/6 rounded bg-gray-200" />
-            <div className="h-4 w-4/6 rounded bg-gray-200" />
+            <div className="h-4 w-full rounded-sm bg-gray-200" />
+            <div className="h-4 w-5/6 rounded-sm bg-gray-200" />
+            <div className="h-4 w-4/6 rounded-sm bg-gray-200" />
           </div>
         </div>
       ))}
