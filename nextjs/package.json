@@ -3,9 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
+    "dev": "pnpm generate:sw && next dev --turbopack",
+    "build": "pnpm generate:sw && next build",
+    "generate:sw": "node scripts/generate-sw.js",
+    "start": "pnpm generate:sw && next start",
     "lint": "next lint"
   },
   "dependencies": {
