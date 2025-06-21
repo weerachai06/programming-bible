@@ -10,7 +10,7 @@ export const ContentVisibilityList = () => {
   const [items, setItems] = useState<ListItem[]>([]);
 
   useEffect(() => {
-    setItems(generateMockData(10000));
+    setItems(generateMockData(100000));
   }, []);
 
   return (
