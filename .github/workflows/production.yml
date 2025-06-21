@@ -5,6 +5,8 @@ env:
   WORKING_DIRECTORY: ./react-design-pattern
 on:
   push:
+    paths:
+      - "react-design-pattern/**"
     branches:
       - main
 jobs:
