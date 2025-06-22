@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "pnpm generate:sw && next dev --turbopack",
     "build": "pnpm generate:sw && next build",
-    "generate:sw": "node scripts/generate-sw.ts",
+    "generate:sw": "node scripts/generate-sw.mts",
     "start": "next start",
     "lint": "next lint"
   },
