@@ -1,12 +1,12 @@
 {
   "name": "react-design-pattern",
-  "version": "0.2.0",
+  "version": "0.0.1",
   "private": true,
   "scripts": {
     "dev": "pnpm generate:sw && next dev --turbopack",
     "build": "pnpm generate:sw && next build",
     "generate:sw": "node scripts/generate-sw.ts",
-    "start": "pnpm generate:sw && next start",
+    "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
