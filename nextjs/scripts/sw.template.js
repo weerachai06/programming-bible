@@ -1,6 +1,6 @@
 const CACHE_NAME = "{{CACHE_NAME}}";
 
-const urlsToCache = ["/", "/favicon.ico", "/globe.svg"];
+const urlsToCache = ["/favicon.ico", "/globe.svg"];
 
 self.addEventListener("install", (event) => {
   // Remove cache if a new version
