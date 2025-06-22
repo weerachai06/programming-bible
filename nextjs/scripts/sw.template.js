@@ -35,6 +35,15 @@ self.addEventListener("install", (event) => {
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
 
+  const isStaticFiles =
+    event.request.url.includes("/_next/static/") ||
+    event.request.url.includes("/favicon.ico") ||
+    event.request.url.includes("/globe.svg");
+
+  if (!isStaticFiles) {
+    return;
+  }
+
   event.respondWith(
     caches
       .match(event.request)
@@ -55,11 +64,7 @@ self.addEventListener("fetch", (event) => {
           const responseToCache = response.clone();
 
           // Cache Next.js static assets and public files
-          if (
-            event.request.url.includes("/_next/static/") ||
-            event.request.url.includes("/favicon.ico") ||
-            event.request.url.includes("/globe.svg")
-          ) {
+          if (isStaticFiles) {
             caches.open(CACHE_NAME).then((cache) => {
               cache.put(event.request, responseToCache);
             });
