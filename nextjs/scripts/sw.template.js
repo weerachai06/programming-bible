@@ -49,8 +49,11 @@ self.addEventListener("fetch", (event) => {
       .match(event.request)
       .then((cachedResponse) => {
         if (cachedResponse) {
+          console.log("⚡ Cache HIT (rare on first load):", event.request.url);
           return cachedResponse;
         }
+
+        console.log("🌐 Cache MISS - Network fetch:", event.request.url);
 
         return fetch(event.request).then((response) => {
           if (
