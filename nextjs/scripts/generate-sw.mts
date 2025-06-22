@@ -9,7 +9,7 @@ function generateServiceWorker() {
   console.log("🔧 Generating Service Worker...");
 
   // Get environment variables
-  const timestamp = new Date().toISOString().replace(/[-:.]/g, "");
+  const timestamp = new Date().getTime();
   const version = process.env.npm_package_version || "1.0.0";
   const cacheName = `react-design-patterns-${version}-${timestamp}`;
 
