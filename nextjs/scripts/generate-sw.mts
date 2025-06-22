@@ -20,9 +20,16 @@ function generateServiceWorker() {
 
     // Replace placeholders
     const serviceWorkerCode = template.replace(/{{CACHE_NAME}}/g, cacheName);
+    const swInfo = JSON.stringify({
+      version,
+      timestamp,
+      cacheName,
+    });
 
     // Write to public directory
     const outputPath = join(process.cwd(), "public", `/sw.js`);
+    const swInfoPath = join(process.cwd(), "public", `/sw-info.json`);
+    writeFileSync(swInfoPath, swInfo, "utf8");
     writeFileSync(outputPath, serviceWorkerCode, "utf8");
 
     console.log("✅ Service Worker generated successfully!");

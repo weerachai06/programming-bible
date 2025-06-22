@@ -3,18 +3,6 @@ const CACHE_NAME = "{{CACHE_NAME}}";
 const urlsToCache = ["/favicon.ico", "/globe.svg"];
 
 self.addEventListener("install", (event) => {
-  // Remove cache if a new version
-  caches.keys().then((cacheNames) => {
-    return Promise.allSettled(
-      cacheNames.map((cacheName) => {
-        if (cacheName !== CACHE_NAME) {
-          console.log("🗑️ Deleting old cache:", cacheName);
-          return caches.delete(cacheName);
-        }
-      })
-    );
-  });
-
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(urlsToCache).catch((error) => {
@@ -32,7 +20,7 @@ self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
 
-self.addEventListener("fetch", (event) => {
+self.addEventListener("fetch", async (event) => {
   if (event.request.method !== "GET") return;
 
   const isStaticFiles =
