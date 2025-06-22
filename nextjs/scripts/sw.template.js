@@ -3,10 +3,20 @@ const CACHE_NAME = "{{CACHE_NAME}}";
 const urlsToCache = ["/", "/favicon.ico", "/globe.svg"];
 
 self.addEventListener("install", (event) => {
-  console.log("🚀 Service Worker installing with cache:", CACHE_NAME);
+  // Remove cache if a new version
+  caches.keys().then((cacheNames) => {
+    return Promise.allSettled(
+      cacheNames.map((cacheName) => {
+        if (cacheName !== CACHE_NAME) {
+          console.log("🗑️ Deleting old cache:", cacheName);
+          return caches.delete(cacheName);
+        }
+      })
+    );
+  });
+
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log("📦 Opened cache:", CACHE_NAME);
       return cache.addAll(urlsToCache).catch((error) => {
         console.error("❌ Failed to cache resources:", error);
         return Promise.allSettled(
@@ -30,7 +40,6 @@ self.addEventListener("fetch", (event) => {
       .match(event.request)
       .then((cachedResponse) => {
         if (cachedResponse) {
-          console.log("⚡ Serving from cache:", event.request.url);
           return cachedResponse;
         }
 
@@ -53,7 +62,6 @@ self.addEventListener("fetch", (event) => {
           ) {
             caches.open(CACHE_NAME).then((cache) => {
               cache.put(event.request, responseToCache);
-              console.log("💾 Cached:", event.request.url);
             });
           }
 
@@ -76,7 +84,6 @@ self.addEventListener("activate", (event) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (!cacheWhitelist.includes(cacheName)) {
-            console.log("🗑️ Deleting old cache:", cacheName);
             return caches.delete(cacheName);
           }
         })
