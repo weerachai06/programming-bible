@@ -24,8 +24,10 @@ self.addEventListener("fetch", async (event) => {
   if (event.request.method !== "GET") return;
 
   const isStaticFiles =
-    event.request.url.includes("/_next/static/") ||
     event.request.url.includes("/favicon.ico") ||
+    event.request.url.includes(".woff2") ||
+    event.request.url.includes(".woff") ||
+    event.request.url.includes("/_next/image?url=/") ||
     event.request.url.includes("/globe.svg");
 
   if (!isStaticFiles) {
@@ -37,11 +39,8 @@ self.addEventListener("fetch", async (event) => {
       .match(event.request)
       .then((cachedResponse) => {
         if (cachedResponse) {
-          console.log("⚡ Cache HIT (rare on first load):", event.request.url);
           return cachedResponse;
         }
-
-        console.log("🌐 Cache MISS - Network fetch:", event.request.url);
 
         return fetch(event.request).then((response) => {
           if (

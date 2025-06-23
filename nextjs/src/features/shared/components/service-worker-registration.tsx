@@ -3,16 +3,23 @@ import React, { useEffect } from "react";
 
 const ServiceWorkerRegistration: React.FC = () => {
   useEffect(() => {
-    if ("serviceWorker" in navigator && "PushManager") {
-      registerServiceWorker();
-    }
+    registerServiceWorker();
   }, []);
 
   async function registerServiceWorker() {
-    const registration = await navigator.serviceWorker.register("/sw.js", {
+    if (!("serviceWorker" in navigator)) {
+      return;
+    }
+    const latestRegistration = await navigator.serviceWorker.getRegistration();
+
+    if (latestRegistration && latestRegistration.active) {
+      return;
+    }
+
+    await navigator.serviceWorker.register("/sw.js", {
       scope: "/",
+      updateViaCache: "none",
     });
-    console.log("Service Worker registered with scope:", registration.scope);
   }
 
   return null;
