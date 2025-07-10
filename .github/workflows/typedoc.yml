@@ -25,6 +25,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: nextjs
 
     steps:
       - name: Checkout
@@ -46,7 +49,7 @@ jobs:
 
       - name: Generate Documentation
         working-directory: ./nextjs
-        run: npx typedoc@^0.28.7 --options typedoc.json
+        run: pnpm run docs:update
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
