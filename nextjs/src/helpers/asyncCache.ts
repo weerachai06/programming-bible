@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unsafe-function-type */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { AsyncLocalStorage } from "async_hooks";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Callback = (...args: any[]) => Promise<any>;
 
 interface CacheStore {
@@ -35,6 +34,7 @@ const unstable_cache = <T extends Callback>(
   callback: T,
   config: CacheConfig = { maxSize: 100, revalidate: MINITE_REVALIDATE }
 ) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const cachedCallback = async (...args: any[]) => {
     try {
       const store = staticGenerationAsyncStorage.getStore() || cache;

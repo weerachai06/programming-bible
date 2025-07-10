@@ -259,6 +259,7 @@ export namespace TypeDocExamples {
    * 
    * @param input - The input string to process
    * @param options - Optional processing options
+   * @param options.uppercase - Whether to convert to uppercase
    * @returns Processed string result
    * 
    * @example

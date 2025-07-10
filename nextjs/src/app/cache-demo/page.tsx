@@ -1,7 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-function-type */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { unstable_cache } from "@/helpers/asyncCache";
-import React from "react";
 // import { unstable_cache as cache } from "next/cache";
 
 interface Pokemon {
