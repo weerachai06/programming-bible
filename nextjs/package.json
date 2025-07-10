@@ -2,7 +2,6 @@
   "name": "react-design-pattern",
   "version": "0.0.3",
   "private": true,
-  "type": "module",
   "scripts": {
     "dev": "pnpm generate:sw && next dev --turbopack",
     "build": "pnpm generate:sw && next build",
