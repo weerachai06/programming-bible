@@ -20,12 +20,6 @@ export interface ButtonProps
 
 /**
  * A reusable button component with customizable styling and size variants.
- *
- * @param onClick - Function to handle button click events
- * @param children - The content to be displayed inside the button
- * @param className - Additional CSS classes to apply to the button
- * @param size - Size variant for the button styling
- * @param props - Additional HTML button attributes that will be spread to the button element
  * @returns A styled button element with the provided props and styling variants
  *
  * @example
