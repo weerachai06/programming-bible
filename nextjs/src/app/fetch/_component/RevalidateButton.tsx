@@ -33,6 +33,7 @@ export default function RevalidateButton() {
     <div className="flex flex-col items-end gap-2">
       <div className="flex gap-2">
         <button
+          type="button"
           onClick={handleRevalidate}
           disabled={loading}
           className="rounded bg-red-500 px-4 py-2 text-white hover:bg-red-600 disabled:opacity-50"

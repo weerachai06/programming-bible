@@ -1,33 +1,33 @@
-import { AsyncLocalStorage } from "async_hooks";
+import { AsyncLocalStorage } from 'async_hooks'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Callback = (...args: any[]) => Promise<any>;
+type Callback = (...args: any[]) => Promise<any>
 
 interface CacheStore {
-  data: unknown;
-  expiry: number;
-  lastAccessed: number;
+  data: unknown
+  expiry: number
+  lastAccessed: number
 }
 
 interface CacheConfig {
-  maxSize: number;
+  maxSize: number
   // In seconds
-  revalidate: number;
+  revalidate: number
 }
 
-type StringKeyValueMap = Map<string, string>;
+type StringKeyValueMap = Map<string, string>
 
 const createAsyncLocalStorage = <T>(): AsyncLocalStorage<T> => {
-  return new AsyncLocalStorage();
-};
+  return new AsyncLocalStorage()
+}
 
 export const staticGenerationAsyncStorage =
-  createAsyncLocalStorage<StringKeyValueMap>();
+  createAsyncLocalStorage<StringKeyValueMap>()
 
-const cache = new Map<string, string>();
+const cache = new Map<string, string>()
 
 // In seconds
-const MINITE_REVALIDATE = 60;
+const MINITE_REVALIDATE = 60
 
 const unstable_cache = <T extends Callback>(
   key: string,
@@ -37,37 +37,37 @@ const unstable_cache = <T extends Callback>(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const cachedCallback = async (...args: any[]) => {
     try {
-      const store = staticGenerationAsyncStorage.getStore() || cache;
-      const nowSecond = Date.now() / 1000;
+      const store = staticGenerationAsyncStorage.getStore() || cache
+      const nowSecond = Date.now() / 1000
       // cleanupMemory(() => store.delete(key));
-      const cached = store.get(key);
-      const parsedCache: CacheStore = cached ? JSON.parse(cached) : null;
+      const cached = store.get(key)
+      const parsedCache: CacheStore = cached ? JSON.parse(cached) : null
 
       if (cached && parsedCache.expiry > nowSecond) {
-        return parsedCache.data as T;
+        return parsedCache.data as T
       }
 
       const data = await staticGenerationAsyncStorage.run(
         cache,
         callback,
         ...args
-      );
+      )
       const cachedItem = {
         data,
         expiry: nowSecond + config.revalidate,
         lastAccessed: nowSecond,
-      };
+      }
 
-      store.set(key, JSON.stringify(cachedItem));
+      store.set(key, JSON.stringify(cachedItem))
 
-      return data;
+      return data
     } catch (error) {
-      console.error(`Cache error for key ${key}:`, error);
-      throw error;
+      console.error(`Cache error for key ${key}:`, error)
+      throw error
     }
-  };
+  }
 
-  return cachedCallback as unknown as T;
-};
+  return cachedCallback as unknown as T
+}
 
-export { unstable_cache };
+export { unstable_cache }

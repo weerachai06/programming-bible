@@ -1,14 +1,14 @@
-import ServiceWorkerRegistration from "@/features/shared/components/service-worker-registration";
+import ServiceWorkerRegistration from '@/features/shared/components/service-worker-registration'
 
 export default function ServiceWorkerLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
   return (
     <>
       <ServiceWorkerRegistration />
       {children}
     </>
-  );
+  )
 }

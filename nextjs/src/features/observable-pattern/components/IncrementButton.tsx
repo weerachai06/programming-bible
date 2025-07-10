@@ -1,15 +1,15 @@
-"use client";
+'use client'
 
-import { useEffect, useState } from "react";
-import { counterObservable } from "../hooks/useObservableCounter";
-import { Button } from "@/features/shared/components/button";
+import { useEffect, useState } from 'react'
+import { Button } from '@/features/shared/components/button'
+import { counterObservable } from '../hooks/useObservableCounter'
 
 export const IncrementSection = () => {
-  const [actualCounter, setActualCounter] = useState(0);
+  const [actualCounter, setActualCounter] = useState(0)
 
   useEffect(() => {
-    counterObservable.notify(actualCounter);
-  }, [actualCounter]);
+    counterObservable.notify(actualCounter)
+  }, [actualCounter])
 
   return (
     <div className="flex gap-4">
@@ -19,12 +19,12 @@ export const IncrementSection = () => {
 
       <Button
         onClick={() => {
-          setActualCounter((prev) => prev + 1);
+          setActualCounter(prev => prev + 1)
         }}
         className="flex text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 flex-1"
       >
         Increment
       </Button>
     </div>
-  );
-};
+  )
+}

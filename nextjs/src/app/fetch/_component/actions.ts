@@ -1,13 +1,13 @@
-"use server";
-import { revalidateTag } from "next/cache";
+'use server'
+import { revalidateTag } from 'next/cache'
 
 export async function revalidatePosts() {
-  const timestamp = new Date().toISOString();
+  const timestamp = new Date().toISOString()
 
-  revalidateTag("posts");
+  revalidateTag('posts')
 
   return {
     revalidated: true,
     timestamp,
-  };
+  }
 }

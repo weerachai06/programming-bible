@@ -75,7 +75,7 @@ export const PerformanceMetrics = ({
                 : "text-red-600"
             }`}
           >
-            {isNaN(metrics.fps) ? "0" : metrics.fps || "0"}
+            {Number.isNaN(metrics.fps) ? "0" : metrics.fps || "0"}
           </p>
         </div>
 
@@ -84,7 +84,7 @@ export const PerformanceMetrics = ({
             DOM Nodes
           </p>
           <p className="text-lg font-bold text-gray-900">
-            {isNaN(metrics.domNodes)
+            {Number.isNaN(metrics.domNodes)
               ? "0"
               : (metrics.domNodes || 0).toLocaleString()}
           </p>
@@ -103,7 +103,7 @@ export const PerformanceMetrics = ({
                 : "text-green-600"
             }`}
           >
-            {isNaN(metrics.memoryUsage) || !metrics.memoryUsage
+            {Number.isNaN(metrics.memoryUsage) || !metrics.memoryUsage
               ? "N/A"
               : metrics.memoryUsage}
           </p>

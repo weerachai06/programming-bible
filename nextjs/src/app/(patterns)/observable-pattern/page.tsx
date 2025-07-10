@@ -1,12 +1,12 @@
-"use client";
+'use client'
 
-import { IncrementSection } from "@/features/observable-pattern/components/IncrementButton";
-import { ObservableComponent } from "@/features/observable-pattern/components/ObservableComponent";
-import { counterObservable } from "@/features/observable-pattern/hooks/useObservableCounter";
+import { IncrementSection } from '@/features/observable-pattern/components/IncrementButton'
+import { ObservableComponent } from '@/features/observable-pattern/components/ObservableComponent'
+import { counterObservable } from '@/features/observable-pattern/hooks/useObservableCounter'
 
-counterObservable.subscribe((value) => {
-  console.log("New value: ", value);
-});
+counterObservable.subscribe(value => {
+  console.log('New value: ', value)
+})
 
 export default function ObservablePatternPage() {
   return (
@@ -31,5 +31,5 @@ export default function ObservablePatternPage() {
         <IncrementSection />
       </div>
     </div>
-  );
+  )
 }

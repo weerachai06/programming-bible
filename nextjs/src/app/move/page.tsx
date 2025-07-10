@@ -10,11 +10,17 @@ export default function Page() {
           </p>
         </div>
 
-        <button className="fixed bottom-4 right-4 bg-blue-500 text-white font-bold py-2 px-4 rounded-md">
+        <button
+          type="button"
+          className="fixed bottom-4 right-4 bg-blue-500 text-white font-bold py-2 px-4 rounded-md"
+        >
           Move up
         </button>
 
-        <button className="fixed bottom-4 right-16 bg-red-500 text-white font-bold py-2 px-4 rounded-md">
+        <button
+          type="button"
+          className="fixed bottom-4 right-16 bg-red-500 text-white font-bold py-2 px-4 rounded-md"
+        >
           Move down
         </button>
       </div>

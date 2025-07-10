@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Post } from "../api/posts/route";
-import { User } from "../api/users/route";
-import { Product } from "../api/products/route";
-import { NewsArticle } from "../api/news/route";
-import { Weather } from "../api/weather/route";
+import { useEffect, useState } from "react";
 import { CacheStatsPanel } from "../../features/shared/components/cache-stats-panel";
+import type { NewsArticle } from "../api/news/route";
+import type { Post } from "../api/posts/route";
+import type { Product } from "../api/products/route";
+import type { User } from "../api/users/route";
+import type { Weather } from "../api/weather/route";
 
 interface CacheInfo {
   cacheType: "hit" | "miss" | "sw-cache" | "unknown";
@@ -175,6 +175,7 @@ export default function ServiceWorkerCachePage() {
           {/* Controls */}
           <div className="flex gap-2 mt-4">
             <button
+              type="button"
               onClick={() => fetchContent(activeTab)}
               disabled={loading}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
@@ -182,6 +183,7 @@ export default function ServiceWorkerCachePage() {
               {loading ? "🔄 Loading..." : "🔄 Refresh Content"}
             </button>
             <button
+              type="button"
               onClick={clearCache}
               className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
             >
@@ -209,6 +211,7 @@ export default function ServiceWorkerCachePage() {
                 { key: "weather", label: "🌤️ Weather", count: weather.length },
               ].map((tab) => (
                 <button
+                  type="button"
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key as ContentType)}
                   className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
@@ -507,6 +510,7 @@ export default function ServiceWorkerCachePage() {
                     Try refreshing to load content
                   </p>
                   <button
+                    type="button"
                     onClick={() => fetchContent(activeTab)}
                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                   >

@@ -1,26 +1,26 @@
-"use client";
+'use client'
 
-import { useEffect, useState } from "react";
-import { createObservable } from "../helpers";
+import { useEffect, useState } from 'react'
+import { createObservable } from '../helpers'
 
-export const counterObservable = createObservable<number>();
+export const counterObservable = createObservable<number>()
 
 export const useObservableCounter = ({
   isSubscribe = false,
 }: {
-  isSubscribe?: boolean;
+  isSubscribe?: boolean
 }) => {
-  const [counter, setCounter] = useState(0);
+  const [counter, setCounter] = useState(0)
 
   useEffect(() => {
-    const subscription = counterObservable.subscribe(setCounter);
+    const subscription = counterObservable.subscribe(setCounter)
 
-    if (!isSubscribe) subscription.unsubscribe();
+    if (!isSubscribe) subscription.unsubscribe()
 
     return () => {
-      subscription.unsubscribe();
-    };
-  }, [isSubscribe]);
+      subscription.unsubscribe()
+    }
+  }, [isSubscribe])
 
-  return counter;
-};
+  return counter
+}

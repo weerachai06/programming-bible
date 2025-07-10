@@ -1,66 +1,66 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server'
 
 export interface NewsArticle {
-  id: number;
-  title: string;
-  summary: string;
-  content: string;
-  author: string;
-  category: string;
-  publishedAt: string;
-  readTime: number;
-  image: string;
-  tags: string[];
-  views: number;
-  likes: number;
+  id: number
+  title: string
+  summary: string
+  content: string
+  author: string
+  category: string
+  publishedAt: string
+  readTime: number
+  image: string
+  tags: string[]
+  views: number
+  likes: number
 }
 
 const categories = [
-  "Technology",
-  "Business",
-  "Science",
-  "Sports",
-  "Entertainment",
-  "Health",
-  "Politics",
-  "Travel",
-];
+  'Technology',
+  'Business',
+  'Science',
+  'Sports',
+  'Entertainment',
+  'Health',
+  'Politics',
+  'Travel',
+]
 const authors = [
-  "John Doe",
-  "Jane Smith",
-  "Mike Johnson",
-  "Sarah Wilson",
-  "David Brown",
-  "Lisa Davis",
-  "Tom Miller",
-  "Anna Garcia",
-];
+  'John Doe',
+  'Jane Smith',
+  'Mike Johnson',
+  'Sarah Wilson',
+  'David Brown',
+  'Lisa Davis',
+  'Tom Miller',
+  'Anna Garcia',
+]
 
 const generateMockNews = (count: number): NewsArticle[] => {
   const techTitles = [
-    "Revolutionary AI Breakthrough Changes Everything",
-    "New Programming Language Takes Dev World by Storm",
-    "Quantum Computing Reaches New Milestone",
-    "Cybersecurity Threats Evolve in 2025",
-    "Cloud Computing Trends to Watch",
-  ];
+    'Revolutionary AI Breakthrough Changes Everything',
+    'New Programming Language Takes Dev World by Storm',
+    'Quantum Computing Reaches New Milestone',
+    'Cybersecurity Threats Evolve in 2025',
+    'Cloud Computing Trends to Watch',
+  ]
 
   const businessTitles = [
-    "Market Analysis: Tech Stocks Soar",
-    "Startup Funding Reaches Record High",
-    "Remote Work Culture Transformation",
-    "Economic Forecast for Next Quarter",
-    "Digital Transformation Success Stories",
-  ];
+    'Market Analysis: Tech Stocks Soar',
+    'Startup Funding Reaches Record High',
+    'Remote Work Culture Transformation',
+    'Economic Forecast for Next Quarter',
+    'Digital Transformation Success Stories',
+  ]
 
-  const allTitles = [...techTitles, ...businessTitles];
+  const allTitles = [...techTitles, ...businessTitles]
 
   return Array.from({ length: count }, (_, i) => {
-    const category = categories[Math.floor(Math.random() * categories.length)];
+    const category = categories[Math.floor(Math.random() * categories.length)]
     const title =
       allTitles[Math.floor(Math.random() * allTitles.length)] +
-      ` - Part ${i + 1}`;
-    const author = authors[Math.floor(Math.random() * authors.length)];
+      ` - Part ${i + 1}`
+    const author = authors[Math.floor(Math.random() * authors.length)]
 
     return {
       id: i + 1,
@@ -83,39 +83,39 @@ Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium dolor
       image: `https://picsum.photos/800/400?random=${i + 100}`,
       tags: [
         category.toLowerCase(),
-        "trending",
-        ...(Math.random() > 0.5 ? ["featured"] : []),
-        ...(Math.random() > 0.7 ? ["breaking"] : []),
+        'trending',
+        ...(Math.random() > 0.5 ? ['featured'] : []),
+        ...(Math.random() > 0.7 ? ['breaking'] : []),
       ],
       views: Math.floor(Math.random() * 10000 + 100),
       likes: Math.floor(Math.random() * 500 + 10),
-    };
-  });
-};
+    }
+  })
+}
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const count = parseInt(searchParams.get("count") || "15");
-  const category = searchParams.get("category");
-  const delay = parseInt(searchParams.get("delay") || "800");
+  const { searchParams } = new URL(request.url)
+  const count = parseInt(searchParams.get('count') || '15')
+  const category = searchParams.get('category')
+  const delay = parseInt(searchParams.get('delay') || '800')
 
   // Simulate network delay
   if (delay > 0) {
-    await new Promise((resolve) => setTimeout(resolve, delay));
+    await new Promise(resolve => setTimeout(resolve, delay))
   }
 
-  let articles = generateMockNews(count);
+  let articles = generateMockNews(count)
 
   // Filter by category if specified
   if (category) {
     articles = articles.filter(
-      (article) => article.category.toLowerCase() === category.toLowerCase()
-    );
+      article => article.category.toLowerCase() === category.toLowerCase()
+    )
   }
 
   console.log(
     `📰 API: Generating ${articles.length} news articles with ${delay}ms delay`
-  );
+  )
 
   return NextResponse.json(
     {
@@ -125,14 +125,14 @@ export async function GET(request: Request) {
         count: articles.length,
         delay,
         filter: category ? { category } : null,
-        cache: "miss",
+        cache: 'miss',
       },
     },
     {
       headers: {
-        "Cache-Control": "public, s-maxage=15, stale-while-revalidate=60",
-        "X-API-Type": "news",
+        'Cache-Control': 'public, s-maxage=15, stale-while-revalidate=60',
+        'X-API-Type': 'news',
       },
     }
-  );
+  )
 }

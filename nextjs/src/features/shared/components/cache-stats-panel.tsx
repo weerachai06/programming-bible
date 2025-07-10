@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface CacheStats {
   name: string;
@@ -108,7 +108,7 @@ export function CacheStatsPanel() {
     const k = 1024;
     const sizes = ["B", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+    return parseFloat((bytes / k ** i).toFixed(2)) + " " + sizes[i];
   };
 
   const getStatusColor = (status: string) => {
@@ -172,13 +172,14 @@ export function CacheStatsPanel() {
         <h3 className="text-lg font-semibold mb-3">Cache Statistics</h3>
         {cacheStats.length > 0 ? (
           <div className="space-y-3">
-            {cacheStats.map((cache, index) => (
-              <div key={index} className="border rounded-lg p-4">
+            {cacheStats.map((cache) => (
+              <div key={cache.name} className="border rounded-lg p-4">
                 <div className="flex justify-between items-start mb-2">
                   <h4 className="font-medium text-gray-900 break-all">
                     {cache.name}
                   </h4>
                   <button
+                    type="button"
                     onClick={async () => {
                       await caches.delete(cache.name);
                       loadCacheStats();
@@ -263,12 +264,14 @@ export function CacheStatsPanel() {
       {/* Actions */}
       <div className="flex flex-wrap gap-2">
         <button
+          type="button"
           onClick={loadCacheStats}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
         >
           Refresh Stats
         </button>
         <button
+          type="button"
           onClick={async () => {
             const cacheNames = await caches.keys();
             await Promise.all(cacheNames.map((name) => caches.delete(name)));
@@ -279,6 +282,7 @@ export function CacheStatsPanel() {
           Clear All Caches
         </button>
         <button
+          type="button"
           onClick={() => {
             if ("serviceWorker" in navigator) {
               navigator.serviceWorker

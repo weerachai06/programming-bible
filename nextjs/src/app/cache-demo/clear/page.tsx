@@ -1,5 +1,4 @@
 import { revalidateTag } from "next/cache";
-import React from "react";
 
 function ClearPage() {
   const clearCache = async () => {
@@ -9,7 +8,9 @@ function ClearPage() {
 
   return (
     <div>
-      <button onClick={clearCache}>Clear cache</button>
+      <button type="button" onClick={clearCache}>
+        Clear cache
+      </button>
     </div>
   );
 }

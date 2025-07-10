@@ -1,7 +1,7 @@
 "use client";
 
-import { cva, VariantProps } from "class-variance-authority";
-import { ComponentProps } from "react";
+import { cva, type VariantProps } from "class-variance-authority";
+import { type ComponentProps, useId } from "react";
 
 export const selectVariants = cva(
   "rounded-lg border border-solid transition-colors flex items-center justify-between bg-background text-foreground",
@@ -81,16 +81,22 @@ export const Select = ({
   variant,
   ...props
 }: SelectProps) => {
+  const selectId = useId();
+
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor={selectId}
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
           {label}
         </label>
       )}
 
       <select
         {...props}
+        id={selectId}
         className={selectVariants({ size, variant, className })}
       >
         {placeholder && (

@@ -1,89 +1,89 @@
-const CACHE_NAME = "{{CACHE_NAME}}";
+const CACHE_NAME = '{{CACHE_NAME}}'
 
-const urlsToCache = ["/favicon.ico", "/globe.svg"];
+const urlsToCache = ['/favicon.ico', '/globe.svg']
 
-self.addEventListener("install", (event) => {
+self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(urlsToCache).catch((error) => {
-        console.error("❌ Failed to cache resources:", error);
+    caches.open(CACHE_NAME).then(cache => {
+      return cache.addAll(urlsToCache).catch(error => {
+        console.error('❌ Failed to cache resources:', error)
         return Promise.allSettled(
-          urlsToCache.map((url) =>
+          urlsToCache.map(url =>
             cache
               .add(url)
-              .catch((err) => console.error(`❌ Failed to cache ${url}:`, err))
+              .catch(err => console.error(`❌ Failed to cache ${url}:`, err))
           )
-        );
-      });
+        )
+      })
     })
-  );
-  self.skipWaiting();
-});
+  )
+  self.skipWaiting()
+})
 
-self.addEventListener("fetch", async (event) => {
-  if (event.request.method !== "GET") return;
+self.addEventListener('fetch', async event => {
+  if (event.request.method !== 'GET') return
 
   const isStaticFiles =
-    event.request.url.includes("/favicon.ico") ||
-    event.request.url.includes(".woff2") ||
-    event.request.url.includes(".woff") ||
-    event.request.url.includes("/_next/image?url=/") ||
-    event.request.url.includes("/globe.svg");
+    event.request.url.includes('/favicon.ico') ||
+    event.request.url.includes('.woff2') ||
+    event.request.url.includes('.woff') ||
+    event.request.url.includes('/_next/image?url=/') ||
+    event.request.url.includes('/globe.svg')
 
   if (!isStaticFiles) {
-    return;
+    return
   }
 
   event.respondWith(
     caches
       .match(event.request)
-      .then((cachedResponse) => {
+      .then(cachedResponse => {
         if (cachedResponse) {
-          return cachedResponse;
+          return cachedResponse
         }
 
-        return fetch(event.request).then((response) => {
+        return fetch(event.request).then(response => {
           if (
             !response ||
             response.status !== 200 ||
-            response.type !== "basic"
+            response.type !== 'basic'
           ) {
-            return response;
+            return response
           }
 
-          const responseToCache = response.clone();
+          const responseToCache = response.clone()
 
           // Cache Next.js static assets and public files
           if (isStaticFiles) {
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(event.request, responseToCache)
+            })
           }
 
-          return response;
-        });
+          return response
+        })
       })
       .catch(() => {
-        if (event.request.mode === "navigate") {
-          return caches.match("/");
+        if (event.request.mode === 'navigate') {
+          return caches.match('/')
         }
       })
-  );
-});
+  )
+})
 
-self.addEventListener("activate", (event) => {
-  console.log("✅ Service Worker activating with cache:", CACHE_NAME);
-  const cacheWhitelist = [CACHE_NAME];
+self.addEventListener('activate', event => {
+  console.log('✅ Service Worker activating with cache:', CACHE_NAME)
+  const cacheWhitelist = [CACHE_NAME]
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
+    caches.keys().then(cacheNames => {
       return Promise.all(
-        cacheNames.map((cacheName) => {
+        cacheNames.map(cacheName => {
           if (!cacheWhitelist.includes(cacheName)) {
-            return caches.delete(cacheName);
+            return caches.delete(cacheName)
           }
         })
-      );
+      )
     })
-  );
-  self.clients.claim();
-});
+  )
+  self.clients.claim()
+})
