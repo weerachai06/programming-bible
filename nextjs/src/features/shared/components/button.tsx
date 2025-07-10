@@ -14,7 +14,7 @@ export const buttonVariants = cva(
   }
 );
 
-interface ButtonProps
+export interface ButtonProps
   extends ComponentProps<"button">,
     VariantProps<typeof buttonVariants> {}
 
@@ -37,7 +37,6 @@ interface ButtonProps
  *
  * @see {@link buttonVariants} for available styling variants
  * @see {@link VariantProps} for type definitions of the variants
- * @see {@link ComponentProps} for additional HTML button attributes
  */
 export const Button = ({
   onClick,
