@@ -24,7 +24,11 @@ export default defineConfig({
         '**/*.test.*',
         '**/*.spec.*',
       ],
-      include: ['src/**/*.{ts,tsx,js,jsx}'],
+      include: [
+        'src/**/*.{ts,tsx,js,jsx}',
+        // เอาให้รอด
+        // 'src/components/Counter.tsx',
+      ],
       thresholds: {
         global: {
           branches: 80,
