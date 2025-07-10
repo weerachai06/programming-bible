@@ -18,6 +18,27 @@ interface ButtonProps
   extends ComponentProps<"button">,
     VariantProps<typeof buttonVariants> {}
 
+/**
+ * A reusable button component with customizable styling and size variants.
+ *
+ * @param onClick - Function to handle button click events
+ * @param children - The content to be displayed inside the button
+ * @param className - Additional CSS classes to apply to the button
+ * @param size - Size variant for the button styling
+ * @param props - Additional HTML button attributes that will be spread to the button element
+ * @returns A styled button element with the provided props and styling variants
+ *
+ * @example
+ * ```tsx
+ * <Button onClick={() => console.log('Clicked!')} size="sm">
+ *   Click Me
+ * </Button>
+ * ```
+ *
+ * @see {@link buttonVariants} for available styling variants
+ * @see {@link VariantProps} for type definitions of the variants
+ * @see {@link ComponentProps} for additional HTML button attributes
+ */
 export const Button = ({
   onClick,
   children,
