@@ -46,7 +46,7 @@ function LoadingSkeleton() {
       {[...Array(6)].map((_, index) => (
         <div
           key={`skeleton-${
-            // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+            // biome-ignore lint/suspicious/noArrayIndexKey: For demonstration purposes
             index
           }`}
           className="animate-pulse rounded-lg border border-gray-200 p-4 shadow-xs"

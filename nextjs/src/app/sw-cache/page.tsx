@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { CacheStatsPanel } from "../../features/shared/components/cache-stats-panel";
 import type { NewsArticle } from "../api/news/route";
 import type { Post } from "../api/posts/route";
@@ -28,64 +28,67 @@ export default function ServiceWorkerCachePage() {
   const [news, setNews] = useState<NewsArticle[]>([]);
   const [weather, setWeather] = useState<Weather[]>([]);
 
-  const fetchContent = async (type: ContentType, showLoading = true) => {
-    if (showLoading) setLoading(true);
+  const fetchContent = useCallback(
+    async (type: ContentType, showLoading = true) => {
+      if (showLoading) setLoading(true);
 
-    const startTime = Date.now();
+      const startTime = Date.now();
 
-    try {
-      const endpoints = {
-        posts: "/api/posts",
-        users: "/api/users?count=15",
-        products: "/api/products?count=12",
-        news: "/api/news?count=10",
-        weather: "/api/weather?count=6",
-      };
+      try {
+        const endpoints = {
+          posts: "/api/posts",
+          users: "/api/users?count=15",
+          products: "/api/products?count=12",
+          news: "/api/news?count=10",
+          weather: "/api/weather?count=6",
+        };
 
-      const response = await fetch(endpoints[type]);
-      const data = await response.json();
-      const loadTime = Date.now() - startTime;
+        const response = await fetch(endpoints[type]);
+        const data = await response.json();
+        const loadTime = Date.now() - startTime;
 
-      // Determine cache type based on response headers and timing
-      const cacheType: CacheInfo["cacheType"] =
-        response.headers.get("x-cache") === "HIT"
-          ? "hit"
-          : loadTime < 100
-          ? "sw-cache"
-          : "miss";
+        // Determine cache type based on response headers and timing
+        const cacheType: CacheInfo["cacheType"] =
+          response.headers.get("x-cache") === "HIT"
+            ? "hit"
+            : loadTime < 100
+            ? "sw-cache"
+            : "miss";
 
-      setCacheInfo({
-        cacheType,
-        timestamp: new Date().toISOString(),
-        loadTime,
-      });
+        setCacheInfo({
+          cacheType,
+          timestamp: new Date().toISOString(),
+          loadTime,
+        });
 
-      // Update appropriate state
-      switch (type) {
-        case "posts":
-          setPosts(data.data);
-          break;
-        case "users":
-          setUsers(data.data);
-          break;
-        case "products":
-          setProducts(data.data);
-          break;
-        case "news":
-          setNews(data.data);
-          break;
-        case "weather":
-          setWeather(data.data);
-          break;
+        // Update appropriate state
+        switch (type) {
+          case "posts":
+            setPosts(data.data);
+            break;
+          case "users":
+            setUsers(data.data);
+            break;
+          case "products":
+            setProducts(data.data);
+            break;
+          case "news":
+            setNews(data.data);
+            break;
+          case "weather":
+            setWeather(data.data);
+            break;
+        }
+
+        console.log(`✅ ${type} loaded in ${loadTime}ms - Cache: ${cacheType}`);
+      } catch (error) {
+        console.error(`❌ Failed to fetch ${type}:`, error);
+      } finally {
+        if (showLoading) setLoading(false);
       }
-
-      console.log(`✅ ${type} loaded in ${loadTime}ms - Cache: ${cacheType}`);
-    } catch (error) {
-      console.error(`❌ Failed to fetch ${type}:`, error);
-    } finally {
-      if (showLoading) setLoading(false);
-    }
-  };
+    },
+    []
+  );
 
   // Auto-refresh every 30 seconds to demonstrate cache behavior
   useEffect(() => {
@@ -94,12 +97,12 @@ export default function ServiceWorkerCachePage() {
     }, 30000);
 
     return () => clearInterval(interval);
-  }, [activeTab]);
+  }, [activeTab, fetchContent]);
 
   // Initial load
   useEffect(() => {
     fetchContent(activeTab);
-  }, [activeTab]);
+  }, [activeTab, fetchContent]);
 
   const clearCache = async () => {
     if ("caches" in window) {
@@ -348,6 +351,7 @@ export default function ServiceWorkerCachePage() {
                       <div className="flex flex-wrap gap-1">
                         {product.tags.slice(0, 3).map((tag, index) => (
                           <span
+                            // biome-ignore lint/suspicious/noArrayIndexKey: For demonstration purposes
                             key={index}
                             className="px-2 py-1 bg-gray-100 text-xs rounded-full"
                           >
@@ -476,6 +480,7 @@ export default function ServiceWorkerCachePage() {
                       </div>
                       <div className="flex justify-between text-xs">
                         {w.forecast.map((day, index) => (
+                          // biome-ignore lint/suspicious/noArrayIndexKey: For demonstration purposes
                           <div key={index} className="text-center">
                             <div className="font-medium text-gray-700">
                               {day.day}
