@@ -7,7 +7,11 @@
     "build": "pnpm generate:sw && next build",
     "generate:sw": "node scripts/generate-sw.mts",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "docs:generate": "npx typedoc@^0.28.7 --options typedoc.json",
+    "docs:serve": "npx serve docs",
+    "docs:entrypoints": "./scripts/generate-entrypoint.sh",
+    "docs:update": "./scripts/update-typedoc.sh && pnpm docs:generate"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.0",
