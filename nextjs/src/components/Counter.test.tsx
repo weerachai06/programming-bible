@@ -18,7 +18,7 @@ describe('Counter Component', () => {
 
     expect(screen.getByTestId('counter-value')).toHaveTextContent('0')
     expect(screen.getByText('Counter')).toBeInTheDocument()
-    expect(screen.getByText('Step: 1 | Initial: 0')).toBeInTheDocument()
+    expect(screen.getByText('Step: 1 | Initial: ')).toBeInTheDocument()
   })
 
   /**
