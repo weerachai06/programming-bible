@@ -1,19 +1,25 @@
-import Link from 'next/link'
+import Link from "next/link";
 
 const REACT_DESIGN_PATTERNS = [
   {
-    name: 'Observable pattern',
+    name: "Observable pattern",
     description:
-      'A pattern that allows you to subscribe to changes in an object and get notified when the object changes.',
-    link: '/observable-pattern',
+      "A pattern that allows you to subscribe to changes in an object and get notified when the object changes.",
+    link: "/observable-pattern",
   },
   {
-    name: 'Performance Comparison',
+    name: "Performance Comparison",
     description:
-      'Compare different optimization techniques: No optimization vs CSS content-visibility vs Windowing technique for large lists.',
-    link: '/performance-comparison',
+      "Compare different optimization techniques: No optimization vs CSS content-visibility vs Windowing technique for large lists.",
+    link: "/performance-comparison",
   },
-] as const
+  {
+    name: "Security Test Page",
+    description:
+      "⚠️ WARNING: Contains intentional security vulnerabilities for CodeQL testing. DO NOT use in production!",
+    link: "/security-test",
+  },
+] as const;
 
 export default function Home() {
   return (
@@ -28,7 +34,7 @@ export default function Home() {
         </h4>
 
         <div className="flex flex-col gap-2 w-full">
-          {REACT_DESIGN_PATTERNS.map(pattern => (
+          {REACT_DESIGN_PATTERNS.map((pattern) => (
             <div
               key={pattern.link}
               className="flex flex-col gap-4 border-2 border-solid border-stone-900 p-2 rounded-xs w-full"
@@ -49,5 +55,5 @@ export default function Home() {
         </div>
       </main>
     </div>
-  )
+  );
 }
