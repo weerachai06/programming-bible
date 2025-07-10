@@ -13,12 +13,6 @@ const REACT_DESIGN_PATTERNS = [
       "Compare different optimization techniques: No optimization vs CSS content-visibility vs Windowing technique for large lists.",
     link: "/performance-comparison",
   },
-  {
-    name: "Security Test Page",
-    description:
-      "⚠️ WARNING: Contains intentional security vulnerabilities for CodeQL testing. DO NOT use in production!",
-    link: "/security-test",
-  },
 ] as const;
 
 export default function Home() {
