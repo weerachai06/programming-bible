@@ -1,4 +1,4 @@
-name: \[Testing\] Unit Tests & Coverage
+name: "[Testing] Unit Tests & Coverage"
 
 on:
   push:
