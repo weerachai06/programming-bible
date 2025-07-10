@@ -44,11 +44,9 @@ jobs:
           version: 10.8.1
 
       - name: Install dependencies
-        working-directory: ./nextjs
         run: pnpm install --frozen-lockfile
 
       - name: Generate Documentation
-        working-directory: ./nextjs
         run: pnpm run docs:update
 
       - name: Setup Pages
