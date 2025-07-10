@@ -13,7 +13,8 @@
   "noUnusedTemplateLiteral": "warn",       // ลดจาก error เป็น warn
   "useTemplate": "warn",                   // ลดจาก error เป็น warn
   "useConst": "warn",                      // ลดจาก error เป็น warn
-  "useExponentiationOperator": "warn"      // ลดจาก error เป็น warn
+  "useExponentiationOperator": "warn",     // ลดจาก error เป็น warn
+  "useImportType": "off"                   // ปิดการบังคับใช้ import type
 }
 ```
 
@@ -62,6 +63,29 @@
       }
     }
   }
+}
+
+// ปิด useImportType สำหรับ TypeScript files
+{
+  "includes": ["**/*.ts", "**/*.tsx"],
+  "linter": {
+    "rules": {
+      "style": {
+        "useImportType": "off"
+      }
+    }
+  }
+}
+```
+
+### 7. Import/Export Organization
+```json
+"assist": { 
+  "actions": { 
+    "source": { 
+      "organizeImports": "off"     // ปิดการเรียงลำดับ imports อัตโนมัติ
+    } 
+  } 
 }
 ```
 

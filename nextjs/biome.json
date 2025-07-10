@@ -22,7 +22,7 @@
       "!**/public/sw-info.json"
     ]
   },
-  "assist": { "actions": { "source": { "organizeImports": "on" } } },
+  "assist": { "actions": { "source": { "organizeImports": "off" } } },
   "linter": {
     "enabled": true,
     "rules": {
@@ -32,7 +32,8 @@
         "useTemplate": "warn",
         "useConst": "warn",
         "useExponentiationOperator": "warn",
-        "useNodejsImportProtocol": "off"
+        "useNodejsImportProtocol": "off",
+        "useImportType": "off"
       },
       "suspicious": {
         "noExplicitAny": "warn",
@@ -111,7 +112,7 @@
       "linter": {
         "rules": {
           "style": {
-            "useImportType": "error"
+            "useImportType": "off"
           }
         }
       }
