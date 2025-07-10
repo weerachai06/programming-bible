@@ -7,16 +7,56 @@ export const API_KEYS = {
   jwt: 'super_secret_key_123'
 }
 
+// Simulated database for SQL injection testing
+export const executeQuery = (query: string) => {
+  // This simulates actual database execution
+  console.log('Executing query:', query)
+  return { query, executed: true }
+}
+
 // Unsafe HTML sanitization
 export function unsafeHtmlSanitize(html: string): string {
   // Insufficient sanitization - CodeQL should flag this
   return html.replace(/<script>/g, '').replace(/<\/script>/g, '')
 }
 
-// Unsafe SQL query builder
+// Multiple SQL injection patterns
 export function buildQuery(table: string, userInput: string): string {
-  // SQL injection vulnerability
-  return `SELECT * FROM ${table} WHERE name = '${userInput}'`
+  // Direct SQL injection vulnerability
+  const query = `SELECT * FROM ${table} WHERE name = '${userInput}'`
+  executeQuery(query) // Execute the vulnerable query
+  return query
+}
+
+export function buildDeleteQuery(table: string, id: string): string {
+  // SQL injection in DELETE statement
+  const query = `DELETE FROM ${table} WHERE id = ${id}`
+  executeQuery(query)
+  return query
+}
+
+export function buildUpdateQuery(table: string, column: string, value: string, id: string): string {
+  // SQL injection in UPDATE statement
+  const query = `UPDATE ${table} SET ${column} = '${value}' WHERE id = ${id}`
+  executeQuery(query)
+  return query
+}
+
+export function buildInsertQuery(table: string, data: Record<string, string>): string {
+  // SQL injection in INSERT statement
+  const columns = Object.keys(data).join(', ')
+  const values = Object.values(data).map(v => `'${v}'`).join(', ')
+  const query = `INSERT INTO ${table} (${columns}) VALUES (${values})`
+  executeQuery(query)
+  return query
+}
+
+// Dynamic query builder - very vulnerable
+export function buildDynamicQuery(userQuery: string): string {
+  // Direct execution of user input as SQL
+  const query = userQuery
+  executeQuery(query)
+  return query
 }
 
 // Unsafe file path construction

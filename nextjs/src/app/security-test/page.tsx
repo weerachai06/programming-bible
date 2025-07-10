@@ -2,6 +2,12 @@
 
 import { Button } from "@/features/shared/components";
 import { useState } from "react";
+import {
+  buildDeleteQuery,
+  buildDynamicQuery,
+  buildQuery,
+  executeQuery,
+} from "./utils";
 
 export default function SecurityTestPage() {
   const [userInput, setUserInput] = useState("");
@@ -24,7 +30,7 @@ export default function SecurityTestPage() {
     }
   };
 
-  // SQL injection test
+  // SQL injection test via API
   const handleSQLTest = async () => {
     try {
       const response = await fetch("/api/security-test", {
@@ -34,6 +40,40 @@ export default function SecurityTestPage() {
       });
       const data = await response.json();
       setResult(JSON.stringify(data));
+    } catch (error) {
+      setResult("Error: " + (error as Error).message);
+    }
+  };
+
+  // Direct SQL injection via utility functions
+  const handleDirectSQLTest = () => {
+    try {
+      // Multiple SQL injection patterns
+      const selectQuery = buildQuery("users", userInput);
+      const deleteQuery = buildDeleteQuery("users", userInput);
+      const dynamicQuery = buildDynamicQuery(userInput);
+
+      // Execute raw SQL
+      const rawQuery = `SELECT * FROM users WHERE id = ${userInput}`;
+      executeQuery(rawQuery);
+
+      setResult(
+        `Executed queries: ${selectQuery}, ${deleteQuery}, ${dynamicQuery}, ${rawQuery}`
+      );
+    } catch (error) {
+      setResult("Error: " + (error as Error).message);
+    }
+  };
+
+  // Command injection
+  const handleCommandInjection = () => {
+    try {
+      // Simulate command execution
+      const command = `ls -la ${userInput}`;
+      const grepCommand = `grep -r "${userInput}" /var/log/`;
+      const findCommand = `find /home -name "${userInput}"`;
+
+      setResult(`Commands: ${command}, ${grepCommand}, ${findCommand}`);
     } catch (error) {
       setResult("Error: " + (error as Error).message);
     }
@@ -70,7 +110,11 @@ export default function SecurityTestPage() {
           <div className="space-x-4">
             <Button onClick={handleXSSTest}>Test XSS</Button>
             <Button onClick={handleCodeInjection}>Test Code Injection</Button>
-            <Button onClick={handleSQLTest}>Test SQL Injection</Button>
+            <Button onClick={handleSQLTest}>Test SQL Injection (API)</Button>
+            <Button onClick={handleDirectSQLTest}>Test Direct SQL</Button>
+            <Button onClick={handleCommandInjection}>
+              Test Command Injection
+            </Button>
           </div>
 
           {htmlContent && (
