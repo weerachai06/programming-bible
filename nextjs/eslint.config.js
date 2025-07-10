@@ -37,7 +37,7 @@ const eslintConfig = [
     },
   },
   {
-    files: ['**/*.{js,ts,jsx,tsx}'],
+    files: ["src/**/*.ts", "src/**/*.tsx"],
     plugins: {
       jsdoc,
     },
