@@ -1,30 +1,30 @@
-import { Suspense } from 'react'
-import { http } from '@/lib/fetch'
-import type { Post } from '../api/posts/route'
-import RevalidateButton from './_component/RevalidateButton'
+import { http } from "@/lib/fetch";
+import { Suspense } from "react";
+import type { Post } from "../api/posts/route";
+import RevalidateButton from "./_component/RevalidateButton";
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
 async function Posts() {
   const posts = await http.getJSON<{
-    data: Post[]
+    data: Post[];
     meta: {
-      timestamp: string
+      timestamp: string;
       cache: {
-        control: string | null
-        status: string | null
-      }
-    }
-  }>('http://localhost:3000/api/posts', {
+        control: string | null;
+        status: string | null;
+      };
+    };
+  }>("http://localhost:3000/api/posts", {
     next: {
-      tags: ['posts'],
+      tags: ["posts"],
       revalidate: 10000,
     },
-  })
+  });
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {posts.data.map(post => (
+      {posts.data.map((post) => (
         <div
           key={post.id}
           className="rounded-lg border border-gray-200 p-4 shadow-xs"
@@ -32,12 +32,12 @@ async function Posts() {
           <h2 className="mb-2 text-xl font-semibold">{post.title}</h2>
           <p className="text-gray-600">{post.body}</p>
           <p className="mt-2 text-sm text-gray-400">
-            Last updated: {new Date(post.timestamp).toLocaleString('th-TH')}
+            Last updated: {new Date(post.timestamp).toLocaleString("th-TH")}
           </p>
         </div>
       ))}
     </div>
-  )
+  );
 }
 
 function LoadingSkeleton() {
@@ -45,7 +45,10 @@ function LoadingSkeleton() {
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {[...Array(6)].map((_, index) => (
         <div
-          key={index}
+          key={`skeleton-${
+            // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+            index
+          }`}
           className="animate-pulse rounded-lg border border-gray-200 p-4 shadow-xs"
         >
           <div className="mb-2 h-6 w-3/4 rounded-sm bg-gray-200" />
@@ -57,7 +60,7 @@ function LoadingSkeleton() {
         </div>
       ))}
     </div>
-  )
+  );
 }
 
 export default function Page() {
@@ -71,5 +74,5 @@ export default function Page() {
         <Posts />
       </Suspense>
     </div>
-  )
+  );
 }
