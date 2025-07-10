@@ -25,9 +25,9 @@ export default defineConfig({
         '**/*.spec.*',
       ],
       include: [
-        // 'src/**/*.{ts,tsx,js,jsx}',
+        'src/**/*.{ts,tsx,js,jsx}',
         // เอาให้รอด
-        'src/components/Counter.tsx',
+        // 'src/components/Counter.tsx',
       ],
       thresholds: {
         global: {
