@@ -1,0 +1,248 @@
+name: Unit Tests & Coverage
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      pull-requests: write
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: latest
+          
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+          
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+            
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Run linting
+        run: pnpm lint
+        
+      - name: Run unit tests with coverage
+        run: pnpm test:coverage --reporter=verbose
+        
+      - name: Generate coverage summary
+        id: coverage
+        run: |
+          # Create a separate script file for coverage parsing
+          cat > parse-coverage.js << 'EOF'
+          const fs = require('fs');
+          const coverage = JSON.parse(fs.readFileSync('./coverage/coverage-summary.json', 'utf8'));
+          const total = coverage.total;
+          
+          const formatPercent = (pct) => `${pct.toFixed(2)}%`;
+          
+          const summary = `## 📊 Test Coverage Report
+          
+          | Metric | Coverage | Threshold |
+          |--------|----------|-----------|
+          | 🌿 **Branches** | ${formatPercent(total.branches.pct)} | 80% |
+          | 🔧 **Functions** | ${formatPercent(total.functions.pct)} | 80% |  
+          | 📝 **Lines** | ${formatPercent(total.lines.pct)} | 80% |
+          | 📋 **Statements** | ${formatPercent(total.statements.pct)} | 80% |
+          
+          ### 📈 Coverage Details
+          - **Total Lines:** ${total.lines.covered}/${total.lines.total}
+          - **Total Functions:** ${total.functions.covered}/${total.functions.total}
+          - **Total Branches:** ${total.branches.covered}/${total.branches.total}
+          - **Total Statements:** ${total.statements.covered}/${total.statements.total}
+          
+          ### 🎯 Status
+          ${total.lines.pct >= 80 && total.functions.pct >= 80 && total.branches.pct >= 80 && total.statements.pct >= 80 
+            ? '✅ **All coverage thresholds met!**' 
+            : '❌ **Some coverage thresholds not met**'}
+          `;
+          
+          // Save summary to file
+          fs.writeFileSync('./coverage-summary.md', summary);
+          
+          // Output for GitHub Actions
+          console.log(`COVERAGE_SUMMARY<<EOF`);
+          console.log(summary);
+          console.log(`EOF`);
+          
+          console.log(`LINES_PCT=${total.lines.pct}`);
+          console.log(`FUNCTIONS_PCT=${total.functions.pct}`);
+          console.log(`BRANCHES_PCT=${total.branches.pct}`);
+          console.log(`STATEMENTS_PCT=${total.statements.pct}`);
+          
+          const allPassed = total.lines.pct >= 80 && total.functions.pct >= 80 && total.branches.pct >= 80 && total.statements.pct >= 80;
+          console.log(`COVERAGE_PASSED=${allPassed}`);
+          EOF
+          
+          # Run the script and capture output
+          node parse-coverage.js >> $GITHUB_OUTPUT
+          
+      - name: Create job summary
+        run: |
+          echo "## 📊 Test Coverage Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          cat coverage-summary.md >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📁 Coverage Files Generated" >> $GITHUB_STEP_SUMMARY
+          echo "- 📋 HTML Report: \`coverage/index.html\`" >> $GITHUB_STEP_SUMMARY
+          echo "- 📊 JSON Report: \`coverage/coverage-final.json\`" >> $GITHUB_STEP_SUMMARY
+          echo "- 📈 LCOV Report: \`coverage/lcov.info\`" >> $GITHUB_STEP_SUMMARY
+          echo "- 📑 Summary: \`coverage/coverage-summary.json\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🎯 Next Steps" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.coverage.outputs.COVERAGE_PASSED }}" == "true" ]; then
+            echo "✅ All coverage thresholds met! Keep up the excellent work!" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ Some coverage thresholds not met. Consider:" >> $GITHUB_STEP_SUMMARY
+            echo "- Adding more unit tests" >> $GITHUB_STEP_SUMMARY
+            echo "- Testing edge cases" >> $GITHUB_STEP_SUMMARY
+            echo "- Reviewing uncovered code paths" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: |
+            coverage/
+            coverage-summary.md
+          retention-days: 30
+          
+      - name: Comment coverage on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            
+            // Read the coverage summary
+            const coverageSummary = fs.readFileSync('./coverage-summary.md', 'utf8');
+            
+            // Get workflow run URL
+            const workflowUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            
+            // Create comment body with additional info
+            const commentBody = `${coverageSummary}
+
+            ---
+
+            ### 🔍 How to view detailed coverage
+            1. Download the **coverage-report** artifact from [this workflow run](${workflowUrl})
+            2. Extract and open \`coverage/index.html\` in your browser
+            3. Or check individual file coverage in the Files tab
+
+            ### 📊 Coverage Insights
+            ${process.env.COVERAGE_PASSED === 'true' 
+               ? '🎉 **Excellent!** All coverage thresholds exceeded. Great job on maintaining high test coverage!' 
+               : '⚠️ **Attention needed:** Some coverage thresholds not met. Consider adding more tests to improve coverage.'}
+
+            #### 🛠️ Tips for improving coverage:
+            - Add unit tests for uncovered functions and branches
+            - Test edge cases and error conditions
+            - Use \`pnpm test:coverage\` locally to identify gaps
+            - Review the detailed HTML report for line-by-line coverage
+
+            <details>
+            <summary>🤖 Workflow Information</summary>
+
+            - **Workflow:** ${context.workflow}
+            - **Run:** [#${context.runNumber}](${workflowUrl})
+            - **Commit:** [\`${context.sha.substr(0, 7)}\`](https://github.com/${context.repo.owner}/${context.repo.repo}/commit/${context.sha})
+            - **Actor:** @${context.actor}
+            - **Event:** ${context.eventName}
+            - **Ref:** \`${context.ref}\`
+            - **Triggered:** ${new Date().toISOString()}
+
+            </details>`;
+            
+            // Find existing coverage comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const existingComment = comments.find(comment => 
+              comment.user.login === 'github-actions[bot]' && 
+              comment.body.includes('📊 Test Coverage Report')
+            );
+            
+            if (existingComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: commentBody
+              });
+              console.log('✅ Updated existing coverage comment');
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: commentBody
+              });
+              console.log('✅ Created new coverage comment');
+            }
+            
+      - name: Fail if coverage thresholds not met
+        if: steps.coverage.outputs.COVERAGE_PASSED != 'true'
+        run: |
+          echo "💥 Coverage thresholds not met! Here's the breakdown:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Current | Required | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|---------|----------|---------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Lines | ${{ steps.coverage.outputs.LINES_PCT }}% | 80% | ${{ steps.coverage.outputs.LINES_PCT >= 80 && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Functions | ${{ steps.coverage.outputs.FUNCTIONS_PCT }}% | 80% | ${{ steps.coverage.outputs.FUNCTIONS_PCT >= 80 && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Branches | ${{ steps.coverage.outputs.BRANCHES_PCT }}% | 80% | ${{ steps.coverage.outputs.BRANCHES_PCT >= 80 && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Statements | ${{ steps.coverage.outputs.STATEMENTS_PCT }}% | 80% | ${{ steps.coverage.outputs.STATEMENTS_PCT >= 80 && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔧 **Fix suggestions:**" >> $GITHUB_STEP_SUMMARY
+          echo "1. Run \`pnpm test:coverage\` locally to see detailed coverage" >> $GITHUB_STEP_SUMMARY
+          echo "2. Open \`coverage/index.html\` to identify uncovered lines" >> $GITHUB_STEP_SUMMARY
+          echo "3. Add tests for uncovered functions, branches, and statements" >> $GITHUB_STEP_SUMMARY
+          echo "4. Focus on testing edge cases and error conditions" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "❌ **Build failed due to insufficient test coverage**" >> $GITHUB_STEP_SUMMARY
+          echo "Minimum required coverage: 80% for all metrics" >> $GITHUB_STEP_SUMMARY
+          echo ""
+          echo "❌ Coverage thresholds not met:"
+          echo "  Lines: ${{ steps.coverage.outputs.LINES_PCT }}% (required: 80%)"
+          echo "  Functions: ${{ steps.coverage.outputs.FUNCTIONS_PCT }}% (required: 80%)"
+          echo "  Branches: ${{ steps.coverage.outputs.BRANCHES_PCT }}% (required: 80%)"
+          echo "  Statements: ${{ steps.coverage.outputs.STATEMENTS_PCT }}% (required: 80%)"
+          echo ""
+          echo "💡 Tips to improve coverage:"
+          echo "  - Add unit tests for uncovered functions"
+          echo "  - Test different code paths and edge cases"
+          echo "  - Use 'pnpm test:coverage' to generate detailed reports"
+          echo "  - Review coverage/index.html for line-by-line analysis"
+          exit 1
