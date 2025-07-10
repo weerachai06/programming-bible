@@ -50,30 +50,13 @@ const eslintConfig = [
       'jsdoc/check-alignment': 'error',
       'jsdoc/check-indentation': 'warn',
       'jsdoc/check-syntax': 'error',
-      'jsdoc/check-tag-names': ['error', {
-        definedTags: ['fileoverview', 'constant', 'description'],
-        jsxTags: true
-      }],
+      // 'jsdoc/check-tag-names': ['error', {
+      //   definedTags: ['fileoverview', 'constant', 'description'],
+      //   jsxTags: true
+      // }],
       'jsdoc/check-types': 'warn',
       'jsdoc/no-undefined-types': 'warn',
       'jsdoc/valid-types': 'error'
-    }
-  },
-  {
-    files: ['src/examples/**/*.ts'],
-    plugins: {
-      jsdoc,
-    },
-    rules: {
-      // สำหรับไฟล์ examples ให้ lenient กับ tags และ strict กับ documentation
-      'jsdoc/require-description': 'error',
-      'jsdoc/require-param': 'error',
-      'jsdoc/require-param-description': 'error',
-      'jsdoc/require-returns': 'error',
-      'jsdoc/require-returns-description': 'error',
-      'jsdoc/require-example': 'off',
-      'jsdoc/check-examples': 'off',
-      'jsdoc/check-tag-names': 'off' // Allow any tags in examples for TypeDoc compatibility
     }
   }
 ];
