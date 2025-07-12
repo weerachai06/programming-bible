@@ -83,5 +83,19 @@
     color: var(--foreground);
     background: var(--background);
     font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+    overflow-x: hidden;
+  }
+
+  html {
+    /* Enable safe area support */
+    padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0)
+      env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
+    background: #667eea;
+  }
+
+  /* Reset for this demo */
+  * {
+    box-sizing: border-box;
   }
 }
