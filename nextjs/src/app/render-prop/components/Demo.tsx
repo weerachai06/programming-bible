@@ -9,19 +9,18 @@ const hashObject = (obj: object): string => {
 }
 
 const mockProducts = [
-  { id: 1, name: 'iPhone 15', price: 999, category: 'Electronics' },
-  { id: 2, name: 'MacBook Pro', price: 2499, category: 'Electronics' },
-  { id: 3, name: 'AirPods Pro', price: 249, category: 'Electronics' },
-  { id: 4, name: 'Nike Air Max', price: 150, category: 'Footwear' },
-  { id: 5, name: "Levi's Jeans", price: 89, category: 'Clothing' },
-  { id: 6, name: 'Coffee Mug', price: 15, category: 'Home' },
-  { id: 7, name: 'Wireless Charger', price: 35, category: 'Electronics' },
-  { id: 8, name: 'Running Shoes', price: 120, category: 'Footwear' },
+  { sku: '0001', name: 'iPhone 15', price: 999, category: 'Electronics' },
+  { sku: '0002', name: 'MacBook Pro', price: 2499, category: 'Electronics' },
+  { sku: '0003', name: 'AirPods Pro', price: 249, category: 'Electronics' },
+  { sku: '0004', name: 'Nike Air Max', price: 150, category: 'Footwear' },
+  { sku: '0005', name: "Levi's Jeans", price: 89, category: 'Clothing' },
+  { sku: '0006', name: 'Coffee Mug', price: 15, category: 'Home' },
+  { sku: '0007', name: 'Wireless Charger', price: 35, category: 'Electronics' },
+  { sku: '0008', name: 'Running Shoes', price: 120, category: 'Footwear' },
 ].map(product => ({
   ...product,
-  id: hashObject(product),
+  key: hashObject({ sku: product.sku, name: product.name }),
 }))
-console.log('Mock Products:', mockProducts)
 
 export const Demo = () => {
   const [_, setData] = useState(mockProducts)
@@ -33,7 +32,7 @@ export const Demo = () => {
   const renderProductItem = useCallback(
     (product: (typeof mockProducts)[number]) => (
       <ProductItem
-        id={product.id}
+        id={product.key}
         product={product.name}
         price={product.price}
         priceDiscounted={product.price * 0.8} // 20% discount

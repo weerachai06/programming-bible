@@ -1,23 +1,26 @@
-import { memo, ReactNode } from 'react'
+import { memo, Key as ReactKey, ReactNode } from 'react'
 
-interface ProductListProps<TItem> {
+type KeyProp = {
+  key: ReactKey
+}
+
+interface ProductListProps<TItem extends KeyProp> {
   items: TItem[]
   renderItem: (item: TItem) => React.ReactNode
 }
 
 const ProductList = memo(
-  <TItem,>({ items, renderItem }: ProductListProps<TItem>) => {
+  <TItem extends KeyProp>({ items, renderItem }: ProductListProps<TItem>) => {
     return (
       <div className="space-y-4">
-        {items.map((item, index) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: For simplicity, using index as key
-          <div key={index} className="p-4 border rounded-lg">
+        {items.map(item => (
+          <div key={item.key} className="p-4 border rounded-lg">
             {renderItem(item)}
           </div>
         ))}
       </div>
     )
   }
-) as <TItem>(props: ProductListProps<TItem>) => ReactNode
+) as <TItem extends KeyProp>(props: ProductListProps<TItem>) => ReactNode
 
 export default ProductList
