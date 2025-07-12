@@ -33,6 +33,10 @@ export default function EventDelegationPage() {
       const itemId = button.dataset.itemId
       const item = items.find(i => i.id === Number(itemId))
 
+      if (action === 'clear-log') {
+        return setLog([])
+      }
+
       if (!item) return
 
       switch (action) {
@@ -65,11 +69,16 @@ export default function EventDelegationPage() {
           }
           break
         }
-        case 'view':
+        case 'view': {
           addToLog(`Viewed details for ${item.name}`)
           alert(
             `Item Details:\nID: ${item.id}\nName: ${item.name}\nCategory: ${item.category}\nStatus: ${item.status}`
           )
+          break
+        }
+        default:
+          console.warn(`Unknown action: ${action}`)
+          addToLog(`Unknown action: ${action} for item ${item.name}`)
           break
       }
     },
@@ -97,12 +106,20 @@ export default function EventDelegationPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <ItemsList items={items} onListClick={handleListClick} />
-          <ActivityLog log={log} onClearLog={() => setLog([])} />
+        {/** biome-ignore lint/a11y/noStaticElementInteractions: Example */}
+        {/** biome-ignore lint/a11y/useKeyWithClickEvents: For example */}
+        <div
+          className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+          onClick={handleListClick}
+        >
+          <ItemsList items={items} />
+          <ActivityLog logs={log} />
         </div>
 
-        <Button onClick={() => setCount(latestValue => latestValue + 1)}>
+        <Button
+          className="mt-8"
+          onClick={() => setCount(latestValue => latestValue + 1)}
+        >
           Re-Render
         </Button>
 
