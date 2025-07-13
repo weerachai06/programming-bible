@@ -32,10 +32,10 @@ const REACT_DESIGN_PATTERNS = [
     link: '/render-prop',
   },
   {
-    name: 'Service Worker',
+    name: 'Service Worker Cache',
     description:
       'A pattern that allows you to intercept network requests and cache responses for offline use.',
-    link: '/service-worker',
+    link: '/sw-cache',
   },
 ] as const
 
