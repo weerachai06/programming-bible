@@ -50,6 +50,21 @@ fn main() {
 
     println!("=============== Done ================");
 
+    // Ownership and Borrowing
+    println!("=============== Ownership and Borrowing: ================");
+    let mut n1 = 5;
+    let n2 = &mut n1;
+    *n2 += 1;
+    println!(" n2: {}", n2);
+
+    let s1 = String::from("hello");
+    let s2 = &s1; // borrow s1
+    println!(" s1: {}, s2: {}", s1, s2);
+    test_borrowing(s2);
+    mutate_number(n2);
+
+    println!(" n1: {}", n1);
+
     // String
     let hello = "Hello, world!";
     let hello = String::from("Hello, world!");
@@ -175,6 +190,14 @@ fn check_grade3(score: i32) -> Result<String, String> {
     }
 
     return Ok("A".to_string());
+}
+
+fn test_borrowing(s: &String) {
+    println!("The string is: {}", s);
+}
+
+fn mutate_number(n: &mut i32) {
+    *n += 1;
 }
 
 enum Colors {
