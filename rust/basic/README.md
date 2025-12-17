@@ -84,6 +84,20 @@ fn mutate_number(n: &mut i32) {
     *n += 1;
 }
 ```
+### 2.4 Memory of String
+```
+ Stack                    Heap
+ ┌─────────────┐         ┌──────────────┐
+ │db_connection│ ──────→ │"my_db_pool"  │
+ │  String {   │         │              │
+ │   ptr: 0x.. │         │              │
+ │   len: 9    │         │              │
+ │   cap: 9    │         │              │
+ │  }          │         │              │
+ └─────────────┘         └──────────────┘
+       ↓                        ↓
+ เมื่อออกจาก scope          Heap ถูกทำลายตาม
+```
 
 ## 3. String Types
 

@@ -1,3 +1,5 @@
+use crate::lifetime::{DatabaseConnection, DatabaseConnection2};
+
 pub fn lifetime_entry() {
     /*
        let r;
@@ -10,6 +12,39 @@ pub fn lifetime_entry() {
     exam1();
     let x = check_number(&20);
     println!("x: {}", x);
+
+    // struct with lifetime specifier
+    let db_conn_str = String::from("my_db_pool");
+    // let my_db_connection: &str;
+    {
+        let db_connection: DatabaseConnection<'_> = DatabaseConnection::new(db_conn_str.as_str());
+        // my_db_connection = db_connection.get_connection_str();
+        println!(
+            "Database Connection String: {}",
+            db_connection.get_connection_str()
+        );
+    }
+
+    /*
+        let db_connection = DatabaseConnection::new(db_conn_str.as_str());
+            ------------- binding `db_connection` declared here
+        my_db_connection = db_connection.get_connection_str();
+                           ^^^^^^^^^^^^^ borrowed value does not live long enough
+        }
+        - `db_connection` dropped here while still borrowed
+        println!("Database Connection String: {}", my_db_connection);
+    */
+    // println!("Database Connection String: {}", my_db_connection);
+
+    let my_db_connection: String;
+    {
+        let db_connection = DatabaseConnection2::new(db_conn_str.to_owned());
+        my_db_connection = db_connection.get_connection_str().to_owned();
+    }
+
+    println!("Database Connection String: {}", my_db_connection);
+
+    DatabaseConnection2::new(db_conn_str);
 }
 
 pub fn exam1() {
