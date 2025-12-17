@@ -1,4 +1,4 @@
-use crate::speaking::Speaking;
+use crate::basic::Speaking;
 
 pub struct Person {
     name: String,

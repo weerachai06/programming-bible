@@ -1,3 +1,2 @@
-pub mod customer;
-pub mod person;
-pub mod speaking;
+pub mod basic;
+pub mod lifetime;
