@@ -45,6 +45,9 @@ pub fn lifetime_entry() {
     println!("Database Connection String: {}", my_db_connection);
 
     DatabaseConnection2::new(db_conn_str);
+
+    let x = map_role_as_enum("admin");
+    println!("Role: {:?}", x);
 }
 
 pub fn exam1() {
@@ -71,6 +74,20 @@ pub fn check_number<'a>(x: &'a i32) -> &'static str {
     } else {
         "10 or less"
     }
+}
+
+fn map_role_as_enum(role_str: &str) -> Option<Role> {
+    match role_str {
+        "admin" => Some(Role::Admin),
+        "user" => Some(Role::User),
+        _ => None,
+    }
+}
+
+#[derive(Debug)]
+enum Role {
+    Admin,
+    User,
 }
 
 // ❌ Incorrect usage of lifetimes
