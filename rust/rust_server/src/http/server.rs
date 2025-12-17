@@ -1,3 +1,5 @@
+use chrono::Utc;
+
 use crate::http::{HttpStatus, Method, Request, Response, Result};
 use std::io::Read;
 use std::net::TcpListener;
@@ -23,7 +25,17 @@ impl Server {
 
             let request = Request::try_from(&buffer[..])?;
 
-            println!("{:#?}", request);
+            let timestamp = std::time::SystemTime::now();
+            let date_time = chrono::DateTime::<Utc>::from(timestamp);
+            let thai_date_time =
+                date_time.with_timezone(&chrono::FixedOffset::east_opt(7 * 3600).unwrap());
+
+            println!(
+                "[{}] {:?} {}",
+                thai_date_time,
+                request.method(),
+                request.path()
+            );
 
             let response = match request.method() {
                 Method::GET => match request.path().as_str() {

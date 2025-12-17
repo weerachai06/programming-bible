@@ -30,9 +30,7 @@ impl TryFrom<&[u8]> for Request {
 
     fn try_from(buf: &[u8]) -> Result<Self> {
         let request = str::from_utf8(&buf)?;
-        println!("{}", request);
 
-        // GET /hello?name=abc&age=20 HTTP/1.1
         let mut request = request.split_whitespace();
         let method = request.next().ok_or(Error::InvalidRequest)?;
         let mut path = request.next().ok_or(Error::InvalidRequest)?;
