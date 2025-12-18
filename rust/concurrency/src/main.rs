@@ -223,7 +223,7 @@ fn ex3_02_shared_access_mutex() {
         let counter = Arc::clone(&counter);
         let handle = thread::spawn(move || {
             let mut num = counter.lock().unwrap();
-            *num += 1;
+            *num += 10;
         });
 
         handles.push(handle);
