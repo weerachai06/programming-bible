@@ -4,7 +4,11 @@ fn main() {
 
     move_smart_pointer(x);
     print_const_list();
+    following_references();
+    own_smart_pointer();
 }
+
+use smart_pointer::my_box::MyBox;
 
 use crate::List::{Cons, Nil};
 
@@ -30,4 +34,32 @@ fn print_const_list() {
     // ex1: using Box to create a recursive data structure
     let list = Cons(1, Box::new(Cons(2, Box::new(Cons(3, Box::new(Nil))))));
     println!("{:?}", list);
+}
+
+fn following_references() {
+    let x = 5;
+    let y = &x;
+
+    assert_eq!(5, x);
+    assert_eq!(5, *y);
+}
+
+fn own_smart_pointer() {
+    let b = 5;
+    let m = MyBox::new(5);
+
+    // if not implement deref Deref trait should error:
+    // can't compare `{integer}` with `MyBox<{integer}>`
+    assert_eq!(5, b);
+    assert_eq!(5, *m);
+
+    // we can call hello function with string slice
+    let m = MyBox::new(String::from("Rust"));
+    hello(&m);
+    let m2 = MyBox::new(String::from("World"));
+    hello(&(*m2)[..]); // explicit deref coercion to &str
+}
+
+fn hello(name: &str) {
+    println!("Hello, {}!", name);
 }
