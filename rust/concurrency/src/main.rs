@@ -1,6 +1,5 @@
 #![allow(unused)]
 use std::{
-    rc::Rc,
     sync::{Arc, Mutex, mpsc},
     thread,
 };
@@ -209,6 +208,13 @@ fn ex3_01_basic_usage_mutex() {
     println!("Mutex value: {:#?}", mutex);
 }
 
+/**
+ * ex.02 - Shared access to data across multiple threads using Mutex and Arc
+ * --------------------------------------
+ * Create a shared counter protected by a Mutex.
+ * Spawn multiple threads that increment the counter.
+ * Ensure all threads complete and print the final counter value.
+ */
 fn ex3_02_shared_access_mutex() {
     let counter = Arc::new(Mutex::new(0));
     let mut handles = vec![];
