@@ -58,10 +58,7 @@ fn own_smart_pointer() {
     hello(&m);
     let m2 = MyBox::new(String::from("World"));
     hello(&(*m2)[..]); // explicit deref coercion to &str
-}
 
-fn hello(name: &str) {
-    println!("Hello, {}!", name);
     // Verify drop method to be call after goes out of scope
     let _c = CustomerSmartPointer {
         data: String::from("my stuff"),
@@ -76,4 +73,8 @@ fn hello(name: &str) {
     // CustomSmartPointers created
     // Dropping CustomSmartPointer with data `other stuff`!
     // Dropping CustomSmartPointer with data `my stuff`!
+}
+
+fn hello(name: &str) {
+    println!("Hello, {}!", name);
 }
