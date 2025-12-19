@@ -8,7 +8,7 @@ fn main() {
     own_smart_pointer();
 }
 
-use smart_pointer::my_box::MyBox;
+use smart_pointer::my_box::{CustomerSmartPointer, MyBox};
 
 use crate::List::{Cons, Nil};
 
@@ -62,4 +62,18 @@ fn own_smart_pointer() {
 
 fn hello(name: &str) {
     println!("Hello, {}!", name);
+    // Verify drop method to be call after goes out of scope
+    let _c = CustomerSmartPointer {
+        data: String::from("my stuff"),
+    };
+    let _d = CustomerSmartPointer {
+        data: String::from("other stuff"),
+    };
+
+    println!("CustomSmartPointers created");
+
+    // Result:
+    // CustomSmartPointers created
+    // Dropping CustomSmartPointer with data `other stuff`!
+    // Dropping CustomSmartPointer with data `my stuff`!
 }
