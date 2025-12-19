@@ -1,15 +1,13 @@
-use std::cell::RefCell;
+use std::{cell::RefCell, rc::Rc};
 
-use smart_pointer::{CustomerSmartPointer, ExpensiveCalculator, MyBox};
-
-use crate::List::{Cons, Nil};
+use smart_pointer::{CustomerSmartPointer, ExpensiveCalculator, List, MyBox};
 
 fn main() {
     let x = Box::new([0u32; 1_000_000]);
     println!("{:p}", &x);
 
     move_smart_pointer(x);
-    print_const_list();
+    print_cons_list();
     following_references();
     own_smart_pointer();
 
@@ -34,6 +32,8 @@ fn main() {
 
     let a = a.get_value(500_000);
     println!("The calculated value is {}", a);
+
+    // Reference Cycles Can Leak Memory
 }
 
 // https://gemini.google.com/share/4a08ff0bd431
@@ -47,17 +47,18 @@ fn move_smart_pointer(v: Box<[u32; 1_000_000]>) {
 //     Nil,
 // }
 
-#[derive(Debug)]
-#[allow(dead_code)]
-enum List {
-    Cons(i32, Box<List>),
-    Nil,
-}
-
-fn print_const_list() {
-    // ex1: using Box to create a recursive data structure
-    let list = Cons(1, Box::new(Cons(2, Box::new(Cons(3, Box::new(Nil))))));
-    println!("{:?}", list);
+fn print_cons_list() {
+    // ex1: using RefCell and Rc to create a recursive data structure
+    // if we want to see implementation of List, please check src/lib.rs
+    let list = List::Cons(
+        1,
+        RefCell::new(Rc::new(List::Cons(
+            2,
+            RefCell::new(Rc::new(List::Cons(3, RefCell::new(Rc::new(List::Nil))))),
+        ))),
+    );
+    let tail = list.tail();
+    println!("Tail of list: {:?}", tail);
 }
 
 fn following_references() {
