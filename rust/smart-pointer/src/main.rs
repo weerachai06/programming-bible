@@ -6,6 +6,20 @@ fn main() {
     print_const_list();
     following_references();
     own_smart_pointer();
+
+    // Verify drop method to be call after goes out of scope
+    let _c = CustomerSmartPointer {
+        data: String::from("my stuff"),
+    };
+    let _d = CustomerSmartPointer {
+        data: String::from("other stuff"),
+    };
+
+    // Result:
+    // CustomSmartPointers created
+    // Dropping CustomSmartPointer with data `other stuff`!
+    // Dropping CustomSmartPointer with data `my stuff`!
+    println!("CustomSmartPointers created");
 }
 
 use smart_pointer::my_box::{CustomerSmartPointer, MyBox};
@@ -58,21 +72,6 @@ fn own_smart_pointer() {
     hello(&m);
     let m2 = MyBox::new(String::from("World"));
     hello(&(*m2)[..]); // explicit deref coercion to &str
-
-    // Verify drop method to be call after goes out of scope
-    let _c = CustomerSmartPointer {
-        data: String::from("my stuff"),
-    };
-    let _d = CustomerSmartPointer {
-        data: String::from("other stuff"),
-    };
-
-    println!("CustomSmartPointers created");
-
-    // Result:
-    // CustomSmartPointers created
-    // Dropping CustomSmartPointer with data `other stuff`!
-    // Dropping CustomSmartPointer with data `my stuff`!
 }
 
 fn hello(name: &str) {
