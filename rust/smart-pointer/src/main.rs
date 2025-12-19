@@ -1,3 +1,9 @@
+use std::cell::RefCell;
+
+use smart_pointer::{CustomerSmartPointer, ExpensiveCalculator, MyBox};
+
+use crate::List::{Cons, Nil};
+
 fn main() {
     let x = Box::new([0u32; 1_000_000]);
     println!("{:p}", &x);
@@ -20,11 +26,15 @@ fn main() {
     // Dropping CustomSmartPointer with data `other stuff`!
     // Dropping CustomSmartPointer with data `my stuff`!
     println!("CustomSmartPointers created");
+
+    // RefCell and Interior Mutability Pattern demo
+    let a = ExpensiveCalculator {
+        cache: RefCell::new((0..1_000_000).collect()),
+    };
+
+    let a = a.get_value(500_000);
+    println!("The calculated value is {}", a);
 }
-
-use smart_pointer::my_box::{CustomerSmartPointer, MyBox};
-
-use crate::List::{Cons, Nil};
 
 // https://gemini.google.com/share/4a08ff0bd431
 fn move_smart_pointer(v: Box<[u32; 1_000_000]>) {
