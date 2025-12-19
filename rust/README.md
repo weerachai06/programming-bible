@@ -72,6 +72,30 @@ graph LR
     Stack -->|"pointers"| Heap
 ```
 
+```mermaid
+
+graph LR
+    subgraph STACK ["STACK (Stack Frame)"]
+        direction TB
+        var1["num1: 15 (i32)"]
+        var2["num2: 0x555 (Box)"]
+        var3["data: 0xAAA (Vec/Pointer)"]
+    end
+
+    subgraph HEAP ["HEAP (Dynamic Memory)"]
+        direction TB
+        heap1["Address: 0x555 <br/> Value: 15"]
+        heap2["Address: 0xAAA <br/> Value: [1, 2, 3, 4, 5]"]
+    end
+
+    %% Connections
+    var2 -.->|points to| heap1
+    var3 -.->|points to| heap2
+
+    style STACK fill:#f9f,stroke:#333,stroke-width:2px
+    style HEAP fill:#bbf,stroke:#333,stroke-width:2px
+```
+
 **ลักษณะของ Stack vs Heap:**
 
 | Stack 🥞 | Heap 🗂️ |
