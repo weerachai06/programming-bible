@@ -46,31 +46,164 @@ let arr: [i32; 5] = [1, 2, 3, 4, 5];      // Array: ขนาดคงที่,
 #### 🔐 Ownership & Borrowing (กรรมสิทธิ์และการยืม)
 **หลักการสำคัญ:** Rust ใช้ ownership system แทน garbage collector เพื่อจัดการ memory ได้อย่างปลอดภัยและมีประสิทธิภาพ
 
+#### 💾 Stack vs Heap Memory
+**เข้าใจ Memory Layout เพื่อเข้าใจ Ownership:**
+
+```mermaid
+graph LR
+    subgraph "🥞 Stack"
+        direction TB
+        S1["Variables (known size)"]
+        S2["Function parameters"]
+        S3["Return addresses"]
+        S4["Local variables"]
+        S1 --> S2 --> S3 --> S4
+    end
+    
+    subgraph "🗂️ Heap"
+        direction TB
+        H1["Dynamic allocations"]
+        H2["String contents"]
+        H3["Vec data"]
+        H4["Box<T> data"]
+        H1 --> H2 --> H3 --> H4
+    end
+    
+    Stack -->|"pointers"| Heap
+```
+
+**ลักษณะของ Stack vs Heap:**
+
+| Stack 🥞 | Heap 🗂️ |
+|----------|---------|
+| ✅ **เร็ว** - LIFO access | ❌ **ช้า** - pointer following |
+| ✅ **เรียบง่าย** - automatic cleanup | ❌ **ซับซ้อน** - manual management |
+| ❌ **จำกัด** - fixed size at compile time | ✅ **ยืดหยุ่น** - dynamic size |
+| ❌ **ขนาดเล็ก** - limited space | ✅ **ขนาดใหญ่** - large memory pool |
+
+#### 🔄 Memory Management Flow
+```mermaid
+sequenceDiagram
+    participant Code as Your Code
+    participant Stack as Stack Memory
+    participant Heap as Heap Memory
+    participant OS as Operating System
+    
+    Note over Code,OS: Creating String::from("hello")
+    Code->>Stack: Create variable `s1`
+    Code->>OS: Request heap memory
+    OS->>Heap: Allocate memory block
+    Heap-->>Stack: Return pointer address
+    Stack->>Stack: Store (ptr, len, cap)
+    
+    Note over Code,OS: Moving ownership (let s2 = s1)
+    Code->>Stack: Invalidate s1
+    Code->>Stack: Create s2 with same pointer
+    
+    Note over Code,OS: Borrowing (&s2)
+    Code->>Stack: Create reference r1 → s2
+    
+    Note over Code,OS: Dropping (out of scope)
+    Code->>Stack: Drop s2
+    Stack->>Heap: Call drop() on heap data
+    Heap->>OS: Return memory to OS
+```
+
+#### 🧠 Memory Layout Simulation
 ```mermaid
 graph TD
-    A["String::from('hello')"] -->|"move"| B["s1 เป็นเจ้าของข้อมูล"]
-    B -->|"&"| C["s2 ยืมข้อมูลจาก s1"]
-    C --> D["สามารถใช้ s1 และ s2 ได้"]
+    subgraph "Stack Frame"
+        direction TB
+        SP["Stack Pointer ⬇️"]
+        
+        subgraph "Current Function"
+            S1["s1: INVALID ❌"]
+            S2["s2: ptr=0x1000, len=5, cap=5"]
+            S3["r1: &s2 (reference)"]
+        end
+        
+        SP --> S1
+    end
     
-    E["mutable reference"] -->|"&mut"| F["มี mutable ref ได้แค่ 1 อัน"]
-    G["immutable reference"] -->|"&"| H["มี immutable ref ได้หลายอัน"]
+    subgraph "Heap Memory"
+        direction LR
+        H1["0x1000: 'h'"]
+        H2["0x1001: 'e'"] 
+        H3["0x1002: 'l'"]
+        H4["0x1003: 'l'"]
+        H5["0x1004: 'o'"]
+        H6["0x1005: allocated but unused"]
+        
+        H1 --> H2 --> H3 --> H4 --> H5 --> H6
+    end
+    
+    S2 -->|"pointer"| H1
+    S3 -->|"reference"| S2
+    
+    style S1 fill:#ff9999
+    style S2 fill:#99ff99
+    style S3 fill:#9999ff
 ```
 
 **3 กฎสำคัญของ Ownership:**
 1. แต่ละค่าใน Rust มีเจ้าของ (owner) เพียงคนเดียว
-2. มีเจ้าของได้เพียงคนเดียวในเวลาหนึ่ง
+2. มีเจ้าของได้เพียงคนเดียวในเวลาหนึ่ง  
 3. เมื่อเจ้าของออกจาก scope ค่านั้นจะถูกทำลาย
 
+#### 📋 Ownership & Borrowing Examples
 ```rust
-// ตัวอย่างการ move
-let s1 = String::from("hello");
-let s2 = s1;  // s1 ถูก "move" ไป s2
-// println!("{}", s1);  // ❌ Error! s1 ไม่สามารถใช้ได้แล้ว
+// 🔄 การ Move - ownership ถูกย้าย
+let s1 = String::from("hello");  // s1 เป็นเจ้าของ heap data
+let s2 = s1;                     // ownership ย้ายไป s2, s1 invalid
+// println!("{}", s1);           // ❌ Error! s1 ไม่สามารถใช้ได้แล้ว
 
-// ตัวอย่างการ borrow
-let s1 = String::from("hello");
-let s2 = &s1; // s2 "ยืม" ข้อมูลจาก s1
-println!("{}, {}", s1, s2); // ✅ ใช้ได้ทั้งคู่
+// 📎 การ Borrow - สร้าง reference
+let s1 = String::from("hello");  // s1 เป็นเจ้าของ
+let s2 = &s1;                    // s2 "ยืม" ข้อมูลจาก s1  
+println!("{}, {}", s1, s2);      // ✅ ใช้ได้ทั้งคู่
+
+// 🔓 Mutable Borrowing
+let mut s = String::from("hello");
+let r1 = &mut s;                 // mutable reference
+r1.push_str(", world!");         // แก้ไขผ่าน mutable ref
+// let r2 = &s;                  // ❌ Error! ไม่สามารถมี immutable ref พร้อมกับ mutable ref
+```
+
+#### 🎯 Stack vs Heap in Action
+```mermaid
+graph TD
+    subgraph "Example Code"
+        direction TB
+        C1["let x = 5;"]
+        C2["let s = String::from('hello');"]
+        C3["let r = &s;"]
+    end
+    
+    subgraph "Stack Memory"
+        direction TB
+        ST1["x: 5 (i32)"]
+        ST2["s: String { ptr, len, cap }"]
+        ST3["r: &String (reference to s)"]
+    end
+    
+    subgraph "Heap Memory" 
+        direction LR
+        HT1["Memory Block"]
+        HT2["'h' 'e' 'l' 'l' 'o'"]
+        HT1 --> HT2
+    end
+    
+    C1 --> ST1
+    C2 --> ST2
+    C3 --> ST3
+    
+    ST2 -->|"pointer"| HT1
+    ST3 -->|"reference"| ST2
+    
+    style ST1 fill:#e1f5fe
+    style ST2 fill:#f3e5f5  
+    style ST3 fill:#e8f5e8
+    style HT2 fill:#fff3e0
 ```
 
 #### Collections & Data Structures
