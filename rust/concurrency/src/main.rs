@@ -9,7 +9,7 @@ use std::{
 /// เปิด comment ในแต่ละบรรทัดเพื่อทดสอบ
 fn main() {
     // 📚 ตาม Rust Book Chapter 16: https://doc.rust-lang.org/book/ch16-00-concurrency.html
-    
+
     // 🇺️ 16.1. Using Threads to Run Code Simultaneously
     // ex01_threads_simultaneously();     // ⚠️ thread อาจไม่ทำงานครบ
     // ex02_waiting_for_threads();        // ✅ รอให้ thread ทำงานเสร็จ
@@ -20,9 +20,9 @@ fn main() {
     // ex2_02_send_message_series();       // ส่งข้อมูลหลายครั้ง
     // ex2_03_multiple_producers();        // หลาย producers, consumer เดียว
 
-    // 🔒 16.3. Shared-State Concurrency with Mutexes  
+    // 🔒 16.3. Shared-State Concurrency with Mutexes
     // ex3_01_basic_usage_mutex();         // การใช้ Mutex พื้นฐาน
-    ex3_02_shared_access_mutex();          // ✅ แชร์ data ระหว่าง threads
+    ex3_02_shared_access_mutex(); // ✅ แชร์ data ระหว่าง threads
 }
 
 /**
@@ -30,7 +30,7 @@ fn main() {
  * =======================================
  * สร้าง thread ใหม่และให้ print messages พร้อมกัน
  * ⚠️ ปัญหา: Main thread อาจจบก่อน spawned thread ทำงานเสร็จ
- * 
+ *
  * ผลลัพธ์ที่อาจได้:
  *   hi number 1 from the main thread!
  *   hi number 1 from the spawned thread!
@@ -107,7 +107,7 @@ fn ex2_01_basic_channel() {
     // 🚀 Spawn thread ที่ส่งข้อมูล
     thread::spawn(move || {
         let val = String::from("hi"); // 📝 ข้อมูลที่จะส่ง
-        tx.send(val).unwrap();        // 📤 ส่งข้อมูลไป receiver
+        tx.send(val).unwrap(); // 📤 ส่งข้อมูลไป receiver
         // หลังจาก send แล้ว val ถูก move ไป receiver
     });
 
@@ -118,31 +118,34 @@ fn ex2_01_basic_channel() {
 
 /**
  * 📨 ex.02 - Message passing series
- * =================================== 
+ * ===================================
  * ส่งข้อมูลหลายครั้งผ่าน channel เดียวกัน
  * Main thread รับและ print ข้อมูลทุกตัว
  * สาธิต channel ที่สามารถส่งข้อมูลหลายครั้ง
  */
 fn ex2_02_send_message_series() {
     let (tx, rx) = mpsc::channel();
-    
+
     // 🚀 Thread ส่งหลายข้อความ
     thread::spawn(move || {
-        let vals = vec![ // 📝 vector ของข้อความ
+        let vals = vec![
+            // 📝 vector ของข้อความ
             String::from("hi"),
             String::from("from"),
             String::from("the"),
             String::from("thread"),
         ];
 
-        for v in vals { // 🔄 ส่งทีละตัว
+        for v in vals {
+            // 🔄 ส่งทีละตัว
             tx.send(v).unwrap();
             thread::sleep(std::time::Duration::from_secs(1)); // ⏰ รอ 1 วินาที
         }
     });
 
     // 📥 รับข้อมูลทุกตัว
-    for received in rx { // iterator ที่ block จนกว่า sender จะปิด
+    for received in rx {
+        // iterator ที่ block จนกว่า sender จะปิด
         println!("📨 16.2 - 2 Got: {}", received);
     }
 }
@@ -205,11 +208,10 @@ fn ex3_01_basic_usage_mutex() {
 
     {
         let mut num = mutex.lock().unwrap(); // 🔓 ขอ exclusive access
-        *num = 6;                            // ✏️ แก้ไขค่า
-    }   // 🔒 lock ถูกปล่อยอัตโนมัติเมื่อออกจาก scope
+        *num = 6; // ✏️ แก้ไขค่า
+    } // 🔒 lock ถูกปล่อยอัตโนมัติเมื่อออกจาก scope
 
     println!("🔒 Mutex value: {:#?}", mutex);
-}
 }
 
 /**
