@@ -394,12 +394,14 @@ use std::time::Duration;
 fn simple_channel_demo() {
     let (tx, rx) = mpsc::channel();
     
+    // 🏭 PRODUCER THREAD: ผลิตและส่งข้อมูล
     thread::spawn(move || {
         let val = String::from("👋 Hello from thread!");
         tx.send(val).unwrap();  // ส่งข้อมูลผ่าน channel
         // val ถูก move ไปแล้ว ไม่สามารถใช้ได้
     });
     
+    // 🏪 CONSUMER THREAD (Main Thread): รับและประมวลผลข้อมูล
     let received = rx.recv().unwrap();  // รับข้อมูล (blocking)
     println!("📨 Received: {}", received);
 }
@@ -408,7 +410,7 @@ fn simple_channel_demo() {
 fn multiple_producers_demo() {
     let (tx, rx) = mpsc::channel();
     
-    // สร้าง producer หลายตัว
+    // 🏭 PRODUCER THREADS: สร้าง producer หลายตัว
     for id in 0..3 {
         let tx_clone = tx.clone();  // clone sender
         thread::spawn(move || {
@@ -420,7 +422,7 @@ fn multiple_producers_demo() {
     
     drop(tx);  // ปิด original sender
     
-    // รับข้อความทั้งหมด
+    // 🏪 CONSUMER THREAD (Main Thread): รับข้อความทั้งหมด
     for received in rx {
         println!("📨 Got: {}", received);
     }
@@ -430,11 +432,13 @@ fn multiple_producers_demo() {
 fn non_blocking_demo() {
     let (tx, rx) = mpsc::channel();
     
+    // 🏭 PRODUCER THREAD: ส่งข้อมูลหลังจาก delay
     thread::spawn(move || {
         thread::sleep(Duration::from_secs(2));
         tx.send("⏰ Delayed message").unwrap();
     });
     
+    // 🏪 CONSUMER THREAD (Main Thread): รับข้อมูลแบบ non-blocking
     loop {
         match rx.try_recv() {  // ไม่ blocking
             Ok(msg) => {
@@ -481,7 +485,7 @@ fn worker_pool_demo() {
     let (job_tx, job_rx) = mpsc::channel();
     let job_rx = std::sync::Arc::new(std::sync::Mutex::new(job_rx));
     
-    // สร้าง worker threads
+    // 🏪 CONSUMER THREADS (Workers): สร้าง worker threads ที่รับงานมาทำ
     for worker_id in 0..3 {
         let rx_clone = job_rx.clone();
         thread::spawn(move || {
@@ -492,7 +496,7 @@ fn worker_pool_demo() {
         });
     }
     
-    // ส่งงานไปยัง workers
+    // 🏭 PRODUCER THREAD (Main Thread): ส่งงานไปยัง workers
     for job in 1..=10 {
         job_tx.send(format!("Job #{}", job)).unwrap();
     }
