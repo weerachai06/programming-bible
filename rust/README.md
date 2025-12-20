@@ -504,20 +504,191 @@ fn worker_pool_demo() {
 ```
 
 ### 3.3 Shared State with Mutex
+**แนวคิด:** แชร์ข้อมูลระหว่าง threads โดยใช้ mutual exclusion เพื่อป้องกัน data races
+
+**เมื่อไหร่ใช้:** เมื่อต้องการให้หลาย threads เข้าถึงและแก้ไขข้อมูลชุดเดียวกัน
+
 ```rust
 use std::sync::{Arc, Mutex};
+use std::thread;
+use std::time::Duration;
 
-// Arc = Atomically Reference Counted
-// Mutex = Mutual Exclusion
-let counter = Arc::new(Mutex::new(0));
+// 🔢 === BASIC SHARED COUNTER ===
+fn shared_counter_demo() {
+    // Arc = Atomically Reference Counted (thread-safe reference counting)
+    // Mutex = Mutual Exclusion (ล็อกเพื่อให้ thread เดียวเข้าถึงได้)
+    let counter = Arc::new(Mutex::new(0));
+    let mut handles = vec![];
 
-// Clone for each thread
-let counter_clone = Arc::clone(&counter);
-thread::spawn(move || {
-    let mut num = counter_clone.lock().unwrap();
-    *num += 1;
-});
+    // สร้าง 10 threads ที่จะเพิ่มค่า counter
+    for i in 0..10 {
+        let counter_clone = Arc::clone(&counter);  // เพิ่ม reference count
+        let handle = thread::spawn(move || {
+            for j in 0..100 {
+                // 🔒 ขอล็อก mutex (blocking จนกว่าจะได้)
+                let mut num = counter_clone.lock().unwrap();
+                *num += 1;
+                println!("🧵 Thread {} iteration {}: counter = {}", i, j, *num);
+                // 🔓 lock จะถูกปล่อยอัตโนมัติเมื่อ `num` ออกจาก scope
+            }
+        });
+        handles.push(handle);
+    }
+
+    // รอให้ทุก threads เสร็จ
+    for handle in handles {
+        handle.join().unwrap();
+    }
+
+    println!("🏁 Final counter value: {}", *counter.lock().unwrap());
+    // ผลลัพธ์ควรจะเป็น 1000 (10 threads × 100 iterations)
+}
+
+// 💰 === BANK ACCOUNT SIMULATION ===
+#[derive(Debug)]
+struct BankAccount {
+    balance: Arc<Mutex<f64>>,
+}
+
+impl BankAccount {
+    fn new(initial_balance: f64) -> Self {
+        BankAccount {
+            balance: Arc::new(Mutex::new(initial_balance)),
+        }
+    }
+
+    fn deposit(&self, amount: f64) {
+        let mut balance = self.balance.lock().unwrap();
+        *balance += amount;
+        println!("💰 Deposited ${:.2}, new balance: ${:.2}", amount, *balance);
+    }
+
+    fn withdraw(&self, amount: f64) -> Result<(), String> {
+        let mut balance = self.balance.lock().unwrap();
+        if *balance >= amount {
+            *balance -= amount;
+            println!("💸 Withdrew ${:.2}, new balance: ${:.2}", amount, *balance);
+            Ok(())
+        } else {
+            Err(format!("❌ Insufficient funds: ${:.2}", *balance))
+        }
+    }
+
+    fn get_balance(&self) -> f64 {
+        *self.balance.lock().unwrap()
+    }
+}
+
+fn bank_account_demo() {
+    let account = BankAccount::new(1000.0);
+    let mut handles = vec![];
+
+    // สร้าง threads สำหรับฝากเงิน
+    for i in 0..3 {
+        let acc = BankAccount {
+            balance: Arc::clone(&account.balance),
+        };
+        let handle = thread::spawn(move || {
+            for j in 0..5 {
+                acc.deposit(10.0);
+                thread::sleep(Duration::from_millis(10));
+            }
+        });
+        handles.push(handle);
+    }
+
+    // สร้าง threads สำหรับถอนเงิน  
+    for i in 0..2 {
+        let acc = BankAccount {
+            balance: Arc::clone(&account.balance),
+        };
+        let handle = thread::spawn(move || {
+            for j in 0..3 {
+                let _ = acc.withdraw(25.0);
+                thread::sleep(Duration::from_millis(15));
+            }
+        });
+        handles.push(handle);
+    }
+
+    for handle in handles {
+        handle.join().unwrap();
+    }
+
+    println!("🏦 Final account balance: ${:.2}", account.get_balance());
+}
+
+// ⚠️ === DEADLOCK PREVENTION ===
+fn deadlock_prevention_demo() {
+    let data1 = Arc::new(Mutex::new(0));
+    let data2 = Arc::new(Mutex::new(0));
+
+    let data1_clone = Arc::clone(&data1);
+    let data2_clone = Arc::clone(&data2);
+
+    // ✅ GOOD: ล็อกตามลำดับเดียวกันเสมอ (data1 ก่อน data2)
+    let handle1 = thread::spawn(move || {
+        let _lock1 = data1_clone.lock().unwrap();
+        thread::sleep(Duration::from_millis(10));
+        let _lock2 = data2_clone.lock().unwrap();
+        println!("✅ Thread 1 completed");
+    });
+
+    let data1_clone2 = Arc::clone(&data1);
+    let data2_clone2 = Arc::clone(&data2);
+
+    let handle2 = thread::spawn(move || {
+        let _lock1 = data1_clone2.lock().unwrap(); // ลำดับเดียวกัน
+        thread::sleep(Duration::from_millis(10));
+        let _lock2 = data2_clone2.lock().unwrap();
+        println!("✅ Thread 2 completed");
+    });
+
+    handle1.join().unwrap();
+    handle2.join().unwrap();
+    
+    // ❌ BAD EXAMPLE (จะทำให้เกิด deadlock):
+    // Thread 1: lock(data1) -> lock(data2)  
+    // Thread 2: lock(data2) -> lock(data1)  // ลำดับตรงกันข้าม = deadlock!
+}
+
+// 🔄 === TRY_LOCK FOR NON-BLOCKING ===
+fn try_lock_demo() {
+    let data = Arc::new(Mutex::new(0));
+    let data_clone = Arc::clone(&data);
+
+    thread::spawn(move || {
+        let _lock = data_clone.lock().unwrap();
+        thread::sleep(Duration::from_secs(2)); // ถือ lock นาน
+        println!("🔒 Thread 1 holding lock for 2 seconds");
+    });
+
+    thread::sleep(Duration::from_millis(100));
+
+    // ลองล็อกแบบไม่ blocking
+    match data.try_lock() {
+        Ok(mut guard) => {
+            *guard += 1;
+            println!("✅ Got lock! Value: {}", *guard);
+        }
+        Err(_) => {
+            println!("⏳ Could not get lock, continuing other work...");
+            // ทำงานอื่นแทน
+        }
+    }
+}
 ```
+
+#### 📊 Arc<Mutex<T>> vs Message Passing
+
+| Aspect | Arc<Mutex<T>> | Message Passing (mpsc) |
+|--------|---------------|------------------------|
+| **🔄 Data Flow** | Shared mutable state | Ownership transfer |
+| **🔒 Synchronization** | Locking (blocking) | Channel buffering |
+| **🐛 Debugging** | ❌ Harder (deadlocks, race conditions) | ✅ Easier (linear flow) |
+| **📈 Performance** | 🟡 Lock contention overhead | ✅ Better for high-throughput |
+| **🧠 Mental Model** | 🟡 Complex (shared state) | ✅ Simple (message flow) |
+| **🎯 Use Case** | Shared resources (DB pool) | Task distribution |
 
 ```mermaid
 graph TD
@@ -525,17 +696,71 @@ graph TD
     A --> C[Thread 2] 
     A --> D[Thread 3]
     
-    B --> E[".lock()"]
-    C --> F[".lock()"]
-    D --> G[".lock()"]
+    B --> E["🔒 .lock()"]
+    C --> F["⏳ wait for lock"]
+    D --> G["⏳ wait for lock"]
     
-    E --> H["Modify data safely"]
-    F --> H
-    G --> H
+    E --> H["✏️ Modify data safely"]
+    H --> I["🔓 unlock (automatic)"]
+    I --> F
+    F --> J["✏️ Modify data safely"]
+    J --> K["🔓 unlock (automatic)"]
+    K --> G
     
     style A fill:#f9f,stroke:#333,stroke-width:2px
     style H fill:#9f9,stroke:#333,stroke-width:2px
+    style J fill:#9f9,stroke:#333,stroke-width:2px
 ```
+
+#### 🚨 Common Pitfalls & Best Practices
+
+**❌ ข้อผิดพลาดที่พบบ่อย:**
+```rust
+// 1. ถือ lock นานเกินไป
+let data = Arc::new(Mutex::new(vec![]));
+let mut guard = data.lock().unwrap();
+expensive_operation(); // ❌ ทำให้ thread อื่นรอนาน
+guard.push(value);
+
+// 2. เก็บ MutexGuard ข้าม threads
+let guard = data.lock().unwrap(); 
+thread::spawn(move || {
+    // ❌ Error! MutexGuard ไม่ Send
+    println!("{:?}", guard);
+});
+```
+
+**✅ วิธีที่ถูกต้อง:**
+```rust
+// 1. ลด scope ของ lock
+{
+    let mut guard = data.lock().unwrap();
+    guard.push(value);
+} // lock ถูกปล่อยที่นี่
+expensive_operation(); // ทำหลังปล่อย lock
+
+// 2. Clone ข้อมูลถ้าจำเป็น
+let value = {
+    let guard = data.lock().unwrap();
+    guard.clone() // clone เฉพาะข้อมูลที่ต้องการ
+};
+thread::spawn(move || {
+    println!("{:?}", value); // ✅ ใช้ cloned data
+});
+```
+
+#### 🎯 เมื่อไหร่ใช้ Arc<Mutex<T>>
+
+**✅ เหมาะสำหรับ:**
+- 📊 Global state/configuration
+- 🔌 Connection pools (database, network)
+- 📈 Shared caches/statistics
+- 🎮 Game state ที่ต้องการ real-time updates
+
+**❌ ไม่เหมาะสำหรับ:**
+- 📨 One-way communication (ใช้ channels)
+- 🔄 Pipeline processing (ใช้ message passing)
+- 🎯 Task distribution (ใช้ work queues)
 
 ---
 
