@@ -381,6 +381,79 @@ fn proper_spawn() {
 ```
 
 ### 3.2 Message Passing Architecture
+**คุณสมบัติของ Message Passing:** ป้องกัน data races โดยให้ threads สื่อสารผ่าน channels
+
+**ประโยชน์:** ไม่ต้องใช้ locks, ป้องกัน deadlocks, และง่ายต่อการ debug
+
+```rust
+use std::sync::mpsc;
+use std::thread;
+use std::time::Duration;
+
+// 📡 === SINGLE PRODUCER SINGLE CONSUMER ===
+fn simple_channel_demo() {
+    let (tx, rx) = mpsc::channel();
+    
+    thread::spawn(move || {
+        let val = String::from("👋 Hello from thread!");
+        tx.send(val).unwrap();  // ส่งข้อมูลผ่าน channel
+        // val ถูก move ไปแล้ว ไม่สามารถใช้ได้
+    });
+    
+    let received = rx.recv().unwrap();  // รับข้อมูล (blocking)
+    println!("📨 Received: {}", received);
+}
+
+// 📡 === MULTIPLE PRODUCER SINGLE CONSUMER ===
+fn multiple_producers_demo() {
+    let (tx, rx) = mpsc::channel();
+    
+    // สร้าง producer หลายตัว
+    for id in 0..3 {
+        let tx_clone = tx.clone();  // clone sender
+        thread::spawn(move || {
+            let msg = format!("🔄 Message {} from thread {}", id, id);
+            tx_clone.send(msg).unwrap();
+            thread::sleep(Duration::from_millis(100 * id));
+        });
+    }
+    
+    drop(tx);  // ปิด original sender
+    
+    // รับข้อความทั้งหมด
+    for received in rx {
+        println!("📨 Got: {}", received);
+    }
+}
+
+// 📡 === NON-BLOCKING RECEIVE ===
+fn non_blocking_demo() {
+    let (tx, rx) = mpsc::channel();
+    
+    thread::spawn(move || {
+        thread::sleep(Duration::from_secs(2));
+        tx.send("⏰ Delayed message").unwrap();
+    });
+    
+    loop {
+        match rx.try_recv() {  // ไม่ blocking
+            Ok(msg) => {
+                println!("📨 Received: {}", msg);
+                break;
+            }
+            Err(mpsc::TryRecvError::Empty) => {
+                println!("🔄 No message yet, doing other work...");
+                thread::sleep(Duration::from_millis(500));
+            }
+            Err(mpsc::TryRecvError::Disconnected) => {
+                println!("❌ Channel disconnected");
+                break;
+            }
+        }
+    }
+}
+```
+
 ```mermaid
 graph LR
     A["Producer Thread"] -->|"mpsc::channel"| B["Channel"]
@@ -393,6 +466,37 @@ graph LR
         D
         E
     end
+```
+
+**Message Passing Patterns:**
+```rust
+// 🔄 === SYNC CHANNEL (BOUNDED) ===
+let (tx, rx) = mpsc::sync_channel(2);  // buffer ขนาด 2
+
+// 📬 === ASYNC CHANNEL (UNBOUNDED) ===
+let (tx, rx) = mpsc::channel();  // buffer ไม่จำกัด
+
+// 🎯 === PATTERN: WORKER POOL ===
+fn worker_pool_demo() {
+    let (job_tx, job_rx) = mpsc::channel();
+    let job_rx = std::sync::Arc::new(std::sync::Mutex::new(job_rx));
+    
+    // สร้าง worker threads
+    for worker_id in 0..3 {
+        let rx_clone = job_rx.clone();
+        thread::spawn(move || {
+            while let Ok(job) = rx_clone.lock().unwrap().recv() {
+                println!("👷 Worker {} processing job: {}", worker_id, job);
+                thread::sleep(Duration::from_millis(100));
+            }
+        });
+    }
+    
+    // ส่งงานไปยัง workers
+    for job in 1..=10 {
+        job_tx.send(format!("Job #{}", job)).unwrap();
+    }
+}
 ```
 
 ### 3.3 Shared State with Mutex
@@ -551,7 +655,56 @@ let stack_data = [1, 2, 3, 4, 5];
 let heap_data = Box::new([1; 1000000]);
 ```
 
-### 5.3 Reference Counting (Rc<T>)
+### 5.3 Reference Counting (Rc<T>) - แชร์ Ownership
+**เมื่อไหร่ใช้ Rc<T>:** เมื่อต้องการให้หลาย owners อ่านข้อมูลเดียวกัน (single-threaded)
+
+```rust
+use std::rc::Rc;
+
+// 📊 === RC BASIC USAGE ===
+fn rc_basic_demo() {
+    // สร้าง Rc<String>
+    let data = Rc::new(String::from("📚 Shared data"));
+    println!("🔢 Reference count: {}", Rc::strong_count(&data)); // 1
+    
+    {
+        let data_clone1 = Rc::clone(&data);  // เพิ่ม reference count
+        let data_clone2 = Rc::clone(&data);
+        println!("🔢 Reference count: {}", Rc::strong_count(&data)); // 3
+        
+        println!("📖 data_clone1: {}", data_clone1);
+        println!("📖 data_clone2: {}", data_clone2);
+    } // data_clone1 และ data_clone2 ถูก drop
+    
+    println!("🔢 Reference count: {}", Rc::strong_count(&data)); // 1
+} // data ถูก drop, memory ถูกลบ
+
+// 🌳 === RC WITH COMPLEX DATA STRUCTURES ===
+use std::cell::RefCell;
+
+#[derive(Debug)]
+struct Node {
+    value: i32,
+    children: RefCell<Vec<Rc<Node>>>,
+}
+
+fn rc_tree_demo() {
+    let leaf = Rc::new(Node {
+        value: 3,
+        children: RefCell::new(vec![]),
+    });
+    
+    let branch = Rc::new(Node {
+        value: 5,
+        children: RefCell::new(vec![Rc::clone(&leaf)]),
+    });
+    
+    // leaf มี 2 owners: leaf variable และ branch.children
+    println!("🍃 leaf reference count: {}", Rc::strong_count(&leaf)); // 2
+    println!("🌿 branch reference count: {}", Rc::strong_count(&branch)); // 1
+}
+```
+
 ```mermaid
 graph LR
     A["Rc<List>"] --> B["Reference Count: 1"]
@@ -563,29 +716,271 @@ graph LR
     K["Drop"] --> L["Reference Count: 0<br/>Memory freed"]
 ```
 
-### 5.4 Interior Mutability (RefCell<T>)
+### 5.4 Arc<T> - Thread-Safe Reference Counting
+**ความแตกต่างจาก Rc<T>:** Arc ใช้ได้กับ multiple threads (Atomically Reference Counted)
+
+```rust
+use std::sync::Arc;
+use std::thread;
+use std::time::Duration;
+
+// 🧵 === ARC FOR MULTITHREADING ===
+fn arc_threading_demo() {
+    let data = Arc::new(vec![1, 2, 3, 4, 5]);
+    let mut handles = vec![];
+    
+    for i in 0..3 {
+        let data_clone = Arc::clone(&data);  // thread-safe clone
+        let handle = thread::spawn(move || {
+            let sum: i32 = data_clone.iter().sum();
+            println!("🧵 Thread {} calculated sum: {}", i, sum);
+            thread::sleep(Duration::from_millis(100));
+        });
+        handles.push(handle);
+    }
+    
+    // รอให้ threads ทั้งหมดเสร็จ
+    for handle in handles {
+        handle.join().unwrap();
+    }
+    
+    println!("🔢 Final reference count: {}", Arc::strong_count(&data)); // 1
+}
+
+// 🔒 === ARC + MUTEX FOR SHARED MUTABLE STATE ===
+use std::sync::Mutex;
+
+fn arc_mutex_demo() {
+    let counter = Arc::new(Mutex::new(0));
+    let mut handles = vec![];
+    
+    for _ in 0..10 {
+        let counter_clone = Arc::clone(&counter);
+        let handle = thread::spawn(move || {
+            let mut num = counter_clone.lock().unwrap();
+            *num += 1;
+            println!("🔢 Counter: {}", *num);
+        });
+        handles.push(handle);
+    }
+    
+    for handle in handles {
+        handle.join().unwrap();
+    }
+    
+    println!("🏁 Final counter: {}", *counter.lock().unwrap());
+}
+```
+
+### 5.5 Interior Mutability (RefCell<T>)
+**แนวคิด:** ให้ mutability ใน immutable context ผ่าน runtime borrowing rules
+
 ```rust
 use std::cell::RefCell;
+
+// 📝 === REFCELL BASIC USAGE ===
+#[derive(Debug)]
+struct Library {
+    books: RefCell<Vec<String>>,
+}
+
+impl Library {
+    fn new() -> Library {
+        Library {
+            books: RefCell::new(vec![]),
+        }
+    }
+    
+    // ✅ เพิ่มหนังสือ (แม้ว่า &self จะเป็น immutable)
+    fn add_book(&self, title: String) {
+        self.books.borrow_mut().push(title);
+    }
+    
+    // ✅ อ่านรายการหนังสือ
+    fn list_books(&self) -> Vec<String> {
+        self.books.borrow().clone()
+    }
+    
+    // ✅ นับจำนวนหนังสือ
+    fn count_books(&self) -> usize {
+        self.books.borrow().len()
+    }
+}
+
+fn refcell_demo() {
+    let lib = Library::new();
+    
+    lib.add_book("📖 The Rust Programming Language".to_string());
+    lib.add_book("📖 Programming Rust".to_string());
+    
+    println!("📚 Books in library: {:?}", lib.list_books());
+    println!("🔢 Total books: {}", lib.count_books());
+}
+
+// 📊 === REFCELL RUNTIME BORROWING RULES ===
+fn refcell_borrowing_rules() {
+    let data = RefCell::new(5);
+    
+    // ✅ หลาย immutable borrows พร้อมกัน
+    let r1 = data.borrow();
+    let r2 = data.borrow();
+    println!("📖 Reading: {} and {}", *r1, *r2);
+    drop(r1);
+    drop(r2);
+    
+    // ✅ หนึ่ง mutable borrow
+    {
+        let mut w1 = data.borrow_mut();
+        *w1 = 10;
+        // let r3 = data.borrow(); // ❌ จะ panic! ไม่สามารถ borrow immutable ขณะมี mutable borrow
+    }
+    
+    println!("📖 Final value: {}", *data.borrow());
+}
+
+// 🧪 === REFCELL WITH RC (COMMON PATTERN) ===
+type SharedNode = Rc<RefCell<Node2>>;
+
+#[derive(Debug)]
+struct Node2 {
+    value: i32,
+    next: Option<SharedNode>,
+}
+
+fn rc_refcell_linked_list() {
+    let first = Rc::new(RefCell::new(Node2 {
+        value: 1,
+        next: None,
+    }));
+    
+    let second = Rc::new(RefCell::new(Node2 {
+        value: 2,
+        next: None,
+    }));
+    
+    // เชื่อม first -> second
+    first.borrow_mut().next = Some(Rc::clone(&second));
+    
+    println!("🔗 First node: {:?}", first.borrow().value);
+    if let Some(ref next) = first.borrow().next {
+        println!("🔗 Second node: {:?}", next.borrow().value);
+    }
+}
 
 pub struct ExpensiveCalculator {
     cache: RefCell<Vec<u32>>,
 }
 
 impl ExpensiveCalculator {
+    pub fn new() -> Self {
+        ExpensiveCalculator {
+            cache: RefCell::new(Vec::new()),
+        }
+    }
+    
     pub fn get_value(&self, index: usize) -> u32 {
-        // Runtime borrowing check
-        self.cache.borrow()[index]
+        let mut cache = self.cache.borrow_mut();
+        
+        // ถ้ามีใน cache แล้วให้ return เลย
+        if let Some(&value) = cache.get(index) {
+            return value;
+        }
+        
+        // คำนวณค่าใหม่ (expensive operation)
+        let value = (index * index) as u32;
+        
+        // เก็บใน cache
+        if cache.len() <= index {
+            cache.resize(index + 1, 0);
+        }
+        cache[index] = value;
+        
+        value
     }
 }
 ```
 
-### 5.5 เปรียบเทียบ Smart Pointers
+### 5.6 เปรียบเทียบ Smart Pointers อย่างละเอียด
 
-| Smart Pointer | เมื่อไหร่ใช้ | ข้อดี | ข้อเสีย |
-|---------------|-------------|-------|-------|
-| **Box<T>** | ข้อมูลขนาดใหญ่, recursive types | เร็ว, เรียบง่าย | ใช้ได้แค่ 1 owner |
-| **Rc<T>** | หลาย owners อ่านข้อมูลเดียวกัน | แชร์ข้อมูลได้ | ไม่ thread-safe, ไม่ได้ mutable |
-| **RefCell<T>** | ต้องการ interior mutability | mutable ใน immutable context | Runtime checking |
+| Smart Pointer | Thread Safety | Ownership | Mutability | Runtime Cost | Use Case |
+|---------------|---------------|-----------|------------|--------------|----------|
+| **Box<T>** | ❌ No | Single | Compile-time | ✅ Zero | Heap allocation, recursive types |
+| **Rc<T>** | ❌ No | Multiple | ❌ Immutable only | 🟡 Reference counting | Single-threaded sharing |
+| **Arc<T>** | ✅ Yes | Multiple | ❌ Immutable only | 🔴 Atomic operations | Multi-threaded sharing |
+| **RefCell<T>** | ❌ No | Single | ✅ Interior mutability | 🟡 Runtime borrow check | Immutable struct with mutable fields |
+| **Rc<RefCell<T>>** | ❌ No | Multiple | ✅ Shared mutability | 🔴 Both costs | Single-threaded shared mutable data |
+| **Arc<Mutex<T>>** | ✅ Yes | Multiple | ✅ Thread-safe mutability | 🔴 Maximum cost | Multi-threaded shared mutable data |
+
+#### 📊 การเลือกใช้ Smart Pointer
+```mermaid
+flowchart TD
+    A["ต้องการใช้ข้อมูลอย่างไร?"] --> B{"Single Owner?"}
+    A --> C{"Multiple Owners?"}
+    
+    B -->|"Yes"| D{"ขนาดใหญ่/recursive?"}
+    D -->|"Yes"| E["📦 Box<T>"]
+    D -->|"No"| F{"ต้อง mutate?"}
+    F -->|"Yes"| G["🔄 RefCell<T>"]
+    F -->|"No"| H["🏠 Stack variable"]
+    
+    C -->|"Yes"| I{"Thread-safe?"}
+    I -->|"No"| J{"ต้อง mutate?"}
+    I -->|"Yes"| K{"ต้อง mutate?"}
+    
+    J -->|"No"| L["📚 Rc<T>"]
+    J -->|"Yes"| M["📚🔄 Rc<RefCell<T>>"]
+    
+    K -->|"No"| N["🧵📚 Arc<T>"]
+    K -->|"Yes"| O["🧵📚🔒 Arc<Mutex<T>>"]
+```
+
+#### 🎯 สถานการณ์การใช้งานจริง
+
+**1. 📱 GUI Application (Single-threaded)**
+```rust
+// ใช้ Rc<RefCell<T>> เพื่อแชร์ state ระหว่าง UI components
+type AppState = Rc<RefCell<ApplicationData>>;
+
+struct Button {
+    state: AppState,
+}
+
+struct TextField {
+    state: AppState,  // แชร์ state เดียวกัน
+}
+```
+
+**2. 🌐 Web Server (Multi-threaded)**
+```rust
+// ใช้ Arc<Mutex<T>> เพื่อแชร์ database connection pool
+type DbPool = Arc<Mutex<Vec<Connection>>>;
+
+fn handle_request(pool: DbPool) {
+    let conn = pool.lock().unwrap().pop();
+    // ใช้ connection...
+}
+```
+
+**3. 📊 Caching System**
+```rust
+// Single-threaded: Rc<RefCell<HashMap>>
+type Cache = Rc<RefCell<HashMap<String, Data>>>;
+
+// Multi-threaded: Arc<Mutex<HashMap>>
+type ThreadSafeCache = Arc<Mutex<HashMap<String, Data>>>;
+```
+
+**4. 🌳 Tree/Graph Structures**
+```rust
+// Single-threaded: Rc<RefCell<Node>>
+type NodePtr = Rc<RefCell<TreeNode>>;
+
+struct TreeNode {
+    value: i32,
+    parent: Option<Weak<RefCell<TreeNode>>>,  // Weak เพื่อป้องกัน cycles
+    children: Vec<NodePtr>,
+}
+```
 
 ### 5.6 Custom Smart Pointer
 **สร้าง Smart Pointer ของตัวเอง:**
