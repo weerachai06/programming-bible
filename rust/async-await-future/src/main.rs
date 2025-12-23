@@ -4,8 +4,11 @@
 // นำเข้า Duration สำหรับใช้งาน sleep และจัดการเวลา
 // use std::time::Duration;
 
+use std::time::Duration;
+
 use async_await_future::{
     building_our_own_abstraction::building_our_own_abstraction,
+    closer_look_trait_for_async::closer_look_trait_for_async, timer_future::TimerFuture,
     yield_contorl_runtime::yield_control_runtime,
 };
 // นำเข้า Html parser สำหรับแยก HTML content
@@ -166,6 +169,21 @@ fn main() {
      */
     println!("Building our own abstraction example:");
     building_our_own_abstraction();
+    println!("----------------------------------------");
+
+    /*
+     * ตัวอย่างที่ 8: เจาะลึก trait สำหรับ async / await
+     */
+    println!("Closer look at the trait for async example:");
+    closer_look_trait_for_async();
+    println!("----------------------------------------");
+
+    trpl::block_on(async {
+        println!("TimerFuture example:");
+        let timer = TimerFuture::new(Duration::from_millis(5000));
+        let result = timer.await;
+        println!("Timer completed after {:?}", result);
+    });
 }
 
 // ฟังก์ชัน async สำหรับดึง title ของหน้าเว็บจาก URL
