@@ -5,7 +5,7 @@
 // use std::time::Duration;
 
 use async_await_future::{
-    building_our_own_abstraction::{self, building_our_own_abstraction},
+    building_our_own_abstraction::building_our_own_abstraction,
     yield_contorl_runtime::yield_control_runtime,
 };
 // นำเข้า Html parser สำหรับแยก HTML content
