@@ -14,7 +14,8 @@
 - [4. HTTP Server Implementation](#4-http-server-implementation)
 - [5. Smart Pointers](#5-smart-pointers)
 - [6. Rust-Node.js Binding (NAPI)](#6-rust-nodejs-binding-napi)
-- [7. Key Learning Highlights](#7-key-learning-highlights)
+- [7. Async/Await & Futures](#7-asyncawait--futures)
+- [8. Key Learning Highlights](#8-key-learning-highlights)
 
 ---
 
@@ -1303,7 +1304,205 @@ graph LR
 
 ---
 
-## 7. Key Learning Highlights
+## 7. Async/Await & Futures
+> **Location:** `async-await-future/`  
+> **Entry Point:** `src/main.rs`, `src/lib.rs`
+
+### 7.1 แนวคิดหลัก (Core Concepts)
+
+#### 🎯 Future คืออะไร?
+**Future** คือ "งานที่ยังไม่เสร็จ" หรือ "สัญญาว่าจะมีผลลัพธ์ในอนาคต"
+
+```rust
+// เปรียบเทียบ
+นักเรียน → สั่งอาหาร → ได้ใบเสร็จ (Future) → รออาหาร → ได้อาหาร (Result)
+โปรแกรม → เรียก API → ได้ Future → รอ response → ได้ข้อมูล (Output)
+```
+
+**สถานะของ Future:**
+```rust
+enum Poll<T> {
+    Ready(T),  // เสร็จแล้ว - มีผลลัพธ์
+    Pending,   // ยังไม่เสร็จ - ต้องรอต่อ
+}
+```
+
+#### ⚙️ Async/Await ทำงานยังไง?
+- `async` = สร้าง Future
+- `await` = รอให้ Future เสร็จ
+- **Runtime** (executor) = ตัวจัดการงาน ครอบคลุม scheduler และ reactor
+
+```rust
+// การทำงานของ async/await
+async fn fetch_data() -> String {
+    // สร้าง HTTP request (Future)
+    let response = http_get("https://api.example.com").await;
+    // รอให้ได้ response แล้วประมวลผลต่อ
+    response.text().await
+}
+```
+
+### 7.2 การสร้าง Custom Future
+
+#### 🏗️ TimerFuture Implementation
+**ไฟล์:** `src/timer_future.rs`
+
+```rust
+struct TimerFuture {
+    shared_state: Arc<Mutex<SharedState>>,
+}
+
+impl Future for TimerFuture {
+    type Output = String;
+    
+    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+        let mut state = self.shared_state.lock().unwrap();
+        
+        if state.completed {
+            Poll::Ready("Time's up!".into())
+        } else {
+            state.waker = Some(cx.waker().clone()); // จด Waker ไว้
+            Poll::Pending
+        }
+    }
+}
+```
+
+**🔑 หลักการทำงาน:**
+1. สร้าง background thread นับเวลา
+2. เมื่อเสร็จ → ปลุก Runtime ด้วย `waker.wake()`
+3. Runtime กลับมา poll อีกครั้ง → ได้ `Poll::Ready`
+
+### 7.3 Cooperative Multitasking
+
+#### 🤝 Yield Control (การสลับงาน)
+**ไฟล์:** `src/yield_contorl_runtime.rs`
+
+**❌ แบบไม่ดี - ไม่มี Yield:**
+```rust
+async {
+    heavy_work();    // ทำงานหนักยาวๆ
+    more_work();     // ไม่ yield = งานอื่นรอ
+    final_work();    // monopoly CPU!
+}
+```
+
+**✅ แบบดี - มี Yield:**
+```rust
+async {
+    heavy_work();
+    trpl::yield_now().await; // ให้งานอื่นทำก่อน
+    more_work();
+    trpl::yield_now().await; // สลับกัน
+    final_work();
+}
+```
+
+**💡 ทำไมต้อง yield?**
+- Async ใน Rust = **cooperative** (ต้องยอมจำนน)
+- ไม่ใช่ **preemptive** (บังคับหยุด) เหมือน OS threads
+- ถ้าไม่ yield = monopoly, งานอื่นอดตาย
+
+### 7.4 การสร้าง Utility Functions
+
+#### ⏱️ Timeout Function
+**ไฟล์:** `src/building_our_own_abstraction.rs`
+
+```rust
+// สร้างฟังก์ชัน timeout ของเราเอง
+async fn timeout<F: Future>(
+    future_to_try: F, 
+    max_time: Duration
+) -> Result<F::Output, Duration> {
+    match trpl::select(future_to_try, trpl::sleep(max_time)).await {
+        Either::Left(value) => Ok(value),    // เสร็จทัน
+        Either::Right(_) => Err(max_time),   // timeout
+    }
+}
+
+// การใช้งาน
+match timeout(slow_operation(), Duration::from_secs(5)).await {
+    Ok(result) => println!("Got: {result}"),
+    Err(_) => println!("Too slow!"),
+}
+```
+
+### 7.5 Pin และ Memory Safety
+
+#### 🔒 ทำไมต้อง Pin?
+**ไฟล์:** `src/closer_look_trait_for_async.rs`
+
+```rust
+// Pin ป้องกัน Future จากการย้าย address
+let pinned_future = pin!(async { /* งาน */ });
+
+// เก็บ Future หลายตัวใน vector
+let futures: Vec<Pin<&mut dyn Future<Output = ()>>> = vec![
+    future1, future2, future3
+];
+```
+
+**เหตุผล:**
+- บาง Future มี **self-reference** (ชี้ตัวเอง)
+- ถ้าย้าย address → pointer ผิด → crash!
+- Pin = "ห้ามย้าย" ใน memory
+
+### 7.6 รูปแบบการใช้งาน (Usage Patterns)
+
+#### 🚀 รัน Futures พร้อมกัน
+```rust
+// รอให้ทุกตัวเสร็จ
+trpl::join!(future1, future2, future3).await;
+
+// รอตัวที่เสร็จก่อน
+match trpl::select(future1, future2).await {
+    Either::Left(result) => { /* future1 เสร็จก่อน */ },
+    Either::Right(result) => { /* future2 เสร็จก่อน */ },
+}
+```
+
+#### 📡 การส่งข้อมูลระหว่าง Tasks
+```rust
+let (tx, mut rx) = trpl::channel();
+
+// ส่งข้อมูล
+let sender = async move {
+    tx.send("Hello").unwrap();
+};
+
+// รับข้อมูล
+let receiver = async move {
+    while let Some(msg) = rx.recv().await {
+        println!("Got: {msg}");
+    }
+};
+```
+
+### 7.7 แหล่งเรียนรู้เพิ่มเติม
+
+📖 **Rust Book - Async Programming:**
+- [Futures and Syntax](https://doc.rust-lang.org/book/ch17-01-futures-and-syntax.html) - พื้นฐาน async/await
+- [Concurrency with Async](https://doc.rust-lang.org/book/ch17-02-concurrency-with-async.html) - รัน tasks พร้อมกัน
+- [More Futures](https://doc.rust-lang.org/book/ch17-03-more-futures.html) - เทคนิคขั้นสูง
+- [Streams](https://doc.rust-lang.org/book/ch17-04-streams.html) - ข้อมูลแบบ continuous
+- [Traits for Async](https://doc.rust-lang.org/book/ch17-05-traits-for-async.html) - Future trait ลึกๆ
+- [Futures, Tasks, and Threads](https://doc.rust-lang.org/book/ch17-06-futures-tasks-threads.html) - ความแตกต่างและการทำงานร่วมกัน
+
+### 7.8 สรุปใจความสำคัญ
+
+🎯 **Key Takeaways:**
+1. **Async = เร็วขึ้น** โดยไม่ต้องรอ I/O
+2. **Future = สัญญา** ที่จะมีผลลัพธ์ในอนาคต
+3. **Await = รอ** Future เสร็จ
+4. **Runtime = ผู้จัดการ** ที่ schedule tasks
+5. **Yield = มีมารยาท** ไม่ monopoly CPU
+6. **Pin = ความปลอดภัย** ป้องกัน memory corruption
+
+**การเรียนรู้ async/await ใน Rust ยากหน่อยแต่ให้ performance และ safety ที่ยอดเยี่ยม!** 🦀
+
+---
+
+## 8. Key Learning Highlights
 
 ### 7.1 Rust's Core Principles
 ```mermaid
