@@ -4,7 +4,10 @@
 // นำเข้า Duration สำหรับใช้งาน sleep และจัดการเวลา
 // use std::time::Duration;
 
-use async_await_future::yield_contorl_runtime::yield_control_runtime;
+use async_await_future::{
+    building_our_own_abstraction::{self, building_our_own_abstraction},
+    yield_contorl_runtime::yield_control_runtime,
+};
 // นำเข้า Html parser สำหรับแยก HTML content
 use trpl::Html;
 
@@ -150,7 +153,19 @@ fn main() {
     });
     */
 
+    /*
+     * ตัวอย่างที่ 6: การใช้ yield_now() เพื่อให้ runtime สามารถสลับ context ระหว่าง tasks ได้
+     */
+    println!("Yield control runtime example:");
     yield_control_runtime();
+
+    println!("----------------------------------------");
+
+    /*
+     * ตัวอย่างที่ 7: การสร้าง abstraction ของตัวเองด้วย async/await
+     */
+    println!("Building our own abstraction example:");
+    building_our_own_abstraction();
 }
 
 // ฟังก์ชัน async สำหรับดึง title ของหน้าเว็บจาก URL
