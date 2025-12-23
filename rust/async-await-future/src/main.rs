@@ -2,8 +2,9 @@
 #![allow(dead_code)]
 
 // นำเข้า Duration สำหรับใช้งาน sleep และจัดการเวลา
-use std::time::Duration;
+// use std::time::Duration;
 
+use async_await_future::yield_contorl_runtime::yield_control_runtime;
 // นำเข้า Html parser สำหรับแยก HTML content
 use trpl::Html;
 
@@ -92,6 +93,7 @@ fn main() {
     // ตัวอย่างที่ 4: โค้ดใน async block จะทำงานแบบเป็นลำดับ (linearly)
     // ตัวอย่างที่ 5: การใช้ join! macro เพื่อรวม futures หลายตัว
     // ex04: Code Within One Async Block Executes Linearly
+    /*
     trpl::block_on(async {
         // สร้าง channel สำหรับการสื่อสาร
         let (tx, mut rx) = trpl::channel();
@@ -146,6 +148,9 @@ fn main() {
         // จะรอให้ทุก future เสร็จสิ้นก่อนที่โปรแกรมจะจบ
         trpl::join!(tx_fut1, tx_fut, rx_fut)
     });
+    */
+
+    yield_control_runtime();
 }
 
 // ฟังก์ชัน async สำหรับดึง title ของหน้าเว็บจาก URL
