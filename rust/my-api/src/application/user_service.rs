@@ -15,8 +15,6 @@ pub async fn list_users(state: &Arc<AppState>) -> Json<Value> {
 }
 
 pub async fn create_user(payload: UpdateUserRequest) -> AppResult<Json<UserResponse>> {
-    println!("Creating user with data: {:#?}", payload);
-
     let user = match payload {
         UpdateUserRequest {
             name: Some(name),
