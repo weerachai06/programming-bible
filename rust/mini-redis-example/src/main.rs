@@ -78,5 +78,8 @@ async fn process(socket: tokio::net::TcpStream) {
             println!("failed to write frame to client");
             return; // ออกจากฟังก์ชันและปิดการเชื่อมต่อ
         }
+
+        println!("processed a command from client");
+        println!("{:?}", db);
     }
 }
