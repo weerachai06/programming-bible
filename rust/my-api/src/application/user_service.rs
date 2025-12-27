@@ -2,7 +2,7 @@ use axum::Json;
 use serde_json::Value;
 use std::sync::Arc;
 
-use crate::domain::res::AppResult;
+use crate::domain::res::{AppError, AppResult};
 use crate::domain::user::{UpdateUserRequest, UserResponse};
 use crate::infrastructure::config::AppState;
 
@@ -23,7 +23,7 @@ pub async fn create_user(payload: UpdateUserRequest) -> AppResult<Json<UserRespo
             email: Some(email),
         } => UserResponse { id: 1, name, email },
         _ => {
-            return Err(crate::domain::res::AppError::InvalidInput(
+            return Err(AppError::InvalidInput(
                 "Name and email are required".to_string(),
             ));
         }

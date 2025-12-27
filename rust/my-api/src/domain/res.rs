@@ -1,55 +1,23 @@
-use axum::{
-    Json,
-    http::StatusCode,
-    response::{IntoResponse, Response},
-};
-use serde_json::json;
-
+/// Pure domain errors - no HTTP or framework dependencies
+/// Represents business rule violations and domain-specific errors
+#[derive(Debug, Clone)]
 pub enum AppError {
     UserNotFound,
     InvalidInput(String),
     InternalServerError,
 }
 
-impl IntoResponse for AppError {
-    fn into_response(self) -> Response {
-        let (status, error_message) = match self {
-            AppError::UserNotFound => (StatusCode::NOT_FOUND, "Not found".to_string()),
-            AppError::InvalidInput(msg) => (StatusCode::BAD_REQUEST, msg),
-            AppError::InternalServerError => (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                String::from("Internal server error"),
-            ),
-        };
-
-        let body = json!({
-            "error": error_message,
-            "status": status.as_u16(),
-        });
-
-        (status, Json(body)).into_response()
+impl std::fmt::Display for AppError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            AppError::UserNotFound => write!(f, "User not found"),
+            AppError::InvalidInput(msg) => write!(f, "Invalid input: {}", msg),
+            AppError::InternalServerError => write!(f, "Internal server error"),
+        }
     }
 }
 
-impl From<AppError> for Json<serde_json::Value> {
-    fn from(err: AppError) -> Self {
-        let (status, error_message) = match err {
-            AppError::UserNotFound => (StatusCode::NOT_FOUND, "Not found".to_string()),
-            AppError::InvalidInput(msg) => (StatusCode::BAD_REQUEST, msg),
-            AppError::InternalServerError => (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                String::from("Internal server error"),
-            ),
-        };
-
-        let body = json!({
-            "error": error_message,
-            "status": status.as_u16(),
-        });
-
-        Json(body)
-    }
-}
+impl std::error::Error for AppError {}
 
 // Helper type alias for Results
 pub type AppResult<T> = Result<T, AppError>;
