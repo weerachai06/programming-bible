@@ -46,6 +46,11 @@ async fn process(socket: tokio::net::TcpStream) {
             cmd => panic!("unimplemented command: {:?}", cmd),
         };
 
-        let _ = connection.write_frame(&response).await;
+        let result = connection.write_frame(&response).await;
+
+        if result.is_err() {
+            println!("failed to write frame to client");
+            return;
+        }
     }
 }
