@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct AppConfig {
     pub example_field: String,
@@ -17,15 +18,27 @@ impl Default for AppConfig {
     }
 }
 
-#[derive(Debug, Clone)]
 pub struct AppState {
     pub config: AppConfig,
+    pub user_repository: std::sync::Arc<dyn crate::domain::user::UserRepository + Send + Sync>,
+}
+
+impl std::fmt::Debug for AppState {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("AppState")
+            .field("config", &self.config)
+            .field("user_repository", &"UserRepository")
+            .finish()
+    }
 }
 
 impl AppState {
     pub fn new() -> Self {
         Self {
             config: AppConfig::new(),
+            user_repository: std::sync::Arc::new(
+                crate::infrastructure::repository::InMemoryUserRepository::new(),
+            ),
         }
     }
 }

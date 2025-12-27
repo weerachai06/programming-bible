@@ -1,17 +1,17 @@
 use axum::{
     Json, Router,
-    extract::State,
+    extract::{Path, State},
     http::StatusCode,
     response::{IntoResponse, Response},
-    routing::{get, post},
+    routing::get,
 };
-use serde_json::{Value, json};
+use serde_json::json;
 use std::sync::Arc;
 
+use crate::application::user_service::UserService;
 use crate::domain::res::{AppError, AppResult};
-use crate::domain::user::UpdateUserRequest;
+use crate::domain::user::{CreateUserRequest, UpdateUserRequest, UserResponse};
 use crate::infrastructure::config::AppState;
-use crate::{application::user_service, domain::user::UserResponse};
 
 // HTTP mapping for domain errors - belongs in presentation layer
 impl IntoResponse for AppError {
@@ -35,14 +35,53 @@ impl IntoResponse for AppError {
 
 pub fn user_routes() -> Router<Arc<AppState>> {
     Router::new()
-        .route("/list", get(list_users))
-        .route("/create", post(create_user))
+        .route("/", get(list_users).post(create_user))
+        .route(
+            "/{id}",
+            get(get_user_by_id).put(update_user).delete(delete_user),
+        )
 }
 
-async fn list_users(State(state): State<Arc<AppState>>) -> Json<Value> {
-    user_service::list_users(&state).await
+async fn list_users(State(state): State<Arc<AppState>>) -> AppResult<Json<Vec<UserResponse>>> {
+    let user_service = UserService::new(state.user_repository.clone());
+    let users = user_service.list_users().await?;
+    let responses: Vec<UserResponse> = users.into_iter().map(|u| u.into()).collect();
+    Ok(Json(responses))
 }
 
-async fn create_user(Json(payload): Json<UpdateUserRequest>) -> AppResult<Json<UserResponse>> {
-    user_service::create_user(payload).await
+async fn create_user(
+    State(state): State<Arc<AppState>>,
+    Json(payload): Json<CreateUserRequest>,
+) -> AppResult<Json<UserResponse>> {
+    let user_service = UserService::new(state.user_repository.clone());
+    let user = user_service.create_user(payload).await?;
+    Ok(Json(user.into()))
+}
+
+async fn get_user_by_id(
+    State(state): State<Arc<AppState>>,
+    Path(id): Path<u32>,
+) -> AppResult<Json<UserResponse>> {
+    let user_service = UserService::new(state.user_repository.clone());
+    let user = user_service.get_user_by_id(id).await?;
+    Ok(Json(user.into()))
+}
+
+async fn update_user(
+    State(state): State<Arc<AppState>>,
+    Path(id): Path<u32>,
+    Json(payload): Json<UpdateUserRequest>,
+) -> AppResult<Json<UserResponse>> {
+    let user_service = UserService::new(state.user_repository.clone());
+    let user = user_service.update_user(id, payload).await?;
+    Ok(Json(user.into()))
+}
+
+async fn delete_user(
+    State(state): State<Arc<AppState>>,
+    Path(id): Path<u32>,
+) -> AppResult<StatusCode> {
+    let user_service = UserService::new(state.user_repository.clone());
+    user_service.delete_user(id).await?;
+    Ok(StatusCode::NO_CONTENT)
 }

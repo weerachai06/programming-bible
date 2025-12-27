@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 /// Pure domain errors - no HTTP or framework dependencies
 /// Represents business rule violations and domain-specific errors
 #[derive(Debug, Clone)]
