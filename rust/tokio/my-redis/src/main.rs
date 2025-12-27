@@ -1,56 +1,82 @@
+// นำเข้า dependencies ที่จำเป็น
+// - Connection: สำหรับจัดการการเชื่อมต่อกับ client
+// - Frame: รูปแบบข้อมูลที่ส่งระหว่าง client และ server
+// - task: สำหรับสร้าง async tasks ใน tokio
 use mini_redis::{Connection, Frame};
 use tokio::task;
 
+// ฟังก์ชันหลักของ Redis server โดยใช้ tokio runtime
+// #[tokio::main] จะแปลงฟังก์ชัน async main ให้เป็น synchronous main
 #[tokio::main]
 async fn main() -> mini_redis::Result<()> {
+    // สร้าง TCP listener บนพอร์ต 6379 (พอร์ตมาตรฐานของ Redis)
+    // ใช้ localhost (127.0.0.1) เพื่อให้เชื่อมต่อได้เฉพาะจากเครื่องเดียวกัน
     let listener = tokio::net::TcpListener::bind("127.0.0.1:6379").await?;
 
+    println!("Redis server listening on 127.0.0.1:6379");
+
+    // วนลูปไม่สิ้นสุดเพื่อรับการเชื่อมต่อใหม่จาก clients
     loop {
+        // รอรับการเชื่อมต่อใหม่ (blocking operation)
+        // socket = การเชื่อมต่อกับ client
+        // _ = ข้อมูล address ของ client ที่เราไม่ได้ใช้
         let (socket, _) = listener.accept().await?;
 
-        // A new task is spawned for each inbound socket. The socket is
-        // moved to the new task and processed there.
+        // สร้าง task ใหม่สำหรับจัดการกับ client แต่ละตัว
+        // ใช้ async move เพื่อย้าย ownership ของ socket เข้าไปใน task
+        // การทำแบบนี้ทำให้ server สามารถรองรับ multiple clients พร้อมกันได้
         task::spawn(async move { process(socket).await });
     }
 }
 
+// ฟังก์ชันสำหรับจัดการกับ client แต่ละตัว
+// รับ TcpStream ที่เป็นการเชื่อมต่อกับ client คนหนึ่ง ๆ
 async fn process(socket: tokio::net::TcpStream) {
     use mini_redis::Command::{self, Get, Set};
     use std::collections::HashMap;
 
-    // A hashmap is used to store data
+    // สร้าง HashMap เพื่อเก็บข้อมูล key-value
+    // ในการใช้งานจริง ควรใช้ database หรือ persistent storage
     let mut db = HashMap::new();
 
-    // Connection, provided by `mini-redis`, handles parsing frames from
-    // the socket
+    // สร้าง Connection wrapper จาก socket
+    // Connection จะช่วยจัดการการ parsing frames จาก TCP stream
     let mut connection = Connection::new(socket);
 
-    // Use `read_frame` to receive a command from the connection.
+    // วนลูปรับ commands จาก client จนกว่าการเชื่อมต่อจะปิด
     while let Some(frame) = connection.read_frame().await.unwrap() {
+        // แปลง frame เป็น command และจัดการตาม command type
         let response = match Command::from_frame(frame).unwrap() {
             Set(cmd) => {
-                // Store the key and value in the hashmap
+                // คำสั่ง SET: เก็บ key และ value ใน HashMap
+                // cmd.key() = คีย์ที่จะเก็บ
+                // cmd.value() = ค่าที่จะเก็บ (เป็น Bytes)
                 db.insert(cmd.key().to_string(), cmd.value().clone());
+                // ส่งกลับ "OK" เพื่อบอกว่าบันทึกสำเร็จ
                 Frame::Simple("OK".to_string())
             }
             Get(cmd) => {
+                // คำสั่ง GET: ดึงค่าจาก key ที่ระบุ
                 if let Some(value) = db.get(cmd.key()) {
-                    // `Frame::Bulk` expects data to be of type `Bytes`. This
-                    // type will be covered later in the tutorial. For now,
-                    // `&Vec<u8>` is converted to `Bytes` using `into()`.
+                    // หากพบ key ให้ส่งค่ากลับเป็น Bulk frame
+                    // Frame::Bulk ใช้สำหรับส่งข้อมูลที่เป็น binary หรือข้อความยาว
                     Frame::Bulk(value.clone())
                 } else {
+                    // หากไม่พบ key ให้ส่งกลับ Null (เหมือน Redis จริง ๆ)
                     Frame::Null
                 }
             }
+            // หาก command ไม่ใช่ SET หรือ GET จะ panic (ในตัวอย่างนี้ยังไม่รองรับคำสั่งอื่น)
             cmd => panic!("unimplemented command: {:?}", cmd),
         };
 
+        // เขียน response กลับไปให้ client
         let result = connection.write_frame(&response).await;
 
+        // หากเขียน response ไม่สำเร็จ แสดงว่าการเชื่อมต่อมีปัญหา
         if result.is_err() {
             println!("failed to write frame to client");
-            return;
+            return; // ออกจากฟังก์ชันและปิดการเชื่อมต่อ
         }
     }
 }
