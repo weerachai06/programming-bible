@@ -1,3 +1,7 @@
+use bytes::Bytes;
+use std::fs::{File, OpenOptions};
+use std::io::{BufRead, BufReader, Write};
+
 // นำเข้า dependencies ที่จำเป็น
 // - Connection: สำหรับจัดการการเชื่อมต่อกับ client
 // - Frame: รูปแบบข้อมูลที่ส่งระหว่าง client และ server
@@ -38,6 +42,22 @@ async fn process(socket: tokio::net::TcpStream) {
     // สร้าง HashMap เพื่อเก็บข้อมูล key-value
     // ในการใช้งานจริง ควรใช้ database หรือ persistent storage
     let mut db = HashMap::new();
+    if let Ok(file) = File::open("dump.aof") {
+        let reader = BufReader::new(file);
+        for line in reader.lines() {
+            if let Ok(l) = line {
+                // รูปแบบในไฟล์: key:value
+                let parts: Vec<&str> = l.splitn(2, ':').collect();
+                if parts.len() == 2 {
+                    db.insert(
+                        parts[0].to_string(),
+                        Bytes::from(parts[1].as_bytes().to_vec()),
+                    );
+                }
+            }
+        }
+        println!("Loaded {} keys from dump.aof", db.len());
+    }
 
     // สร้าง Connection wrapper จาก socket
     // Connection จะช่วยจัดการการ parsing frames จาก TCP stream
@@ -48,10 +68,22 @@ async fn process(socket: tokio::net::TcpStream) {
         // แปลง frame เป็น command และจัดการตาม command type
         let response = match Command::from_frame(frame).unwrap() {
             Set(cmd) => {
+                let key = cmd.key();
+                let value = cmd.value();
+                // บันทึกคำสั่ง SET ลงในไฟล์ dump.aof
+                if let Ok(mut file) = OpenOptions::new()
+                    .create(true)
+                    .append(true)
+                    .open("dump.aof")
+                {
+                    // เขียนในรูปแบบ key:value\n
+                    let line = format!("{}:{}\n", key, String::from_utf8_lossy(value));
+                    let _ = file.write_all(line.as_bytes());
+                }
                 // คำสั่ง SET: เก็บ key และ value ใน HashMap
-                // cmd.key() = คีย์ที่จะเก็บ
-                // cmd.value() = ค่าที่จะเก็บ (เป็น Bytes)
-                db.insert(cmd.key().to_string(), cmd.value().clone());
+                // key = คีย์ที่จะเก็บ
+                // value = ค่าที่จะเก็บ (เป็น Bytes)
+                db.insert(key.to_string(), value.clone());
                 // ส่งกลับ "OK" เพื่อบอกว่าบันทึกสำเร็จ
                 Frame::Simple("OK".to_string())
             }
