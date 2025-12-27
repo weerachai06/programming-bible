@@ -1,8 +1,9 @@
-use std::sync::Arc;
 use axum::Json;
 use serde_json::Value;
+use std::sync::Arc;
 
-use crate::domain::user::UpdateUserRequest;
+use crate::domain::res::AppResult;
+use crate::domain::user::{UpdateUserRequest, UserResponse};
 use crate::infrastructure::config::AppState;
 
 pub async fn list_users(state: &Arc<AppState>) -> Json<Value> {
@@ -13,16 +14,20 @@ pub async fn list_users(state: &Arc<AppState>) -> Json<Value> {
     Json(response)
 }
 
-pub async fn create_user(
-    state: &Arc<AppState>, 
-    payload: UpdateUserRequest
-) -> Json<Value> {
-    let response = serde_json::json!({
-        "message": "User created successfully",
-        "config_value": state.config.example_field,
-    });
-
+pub async fn create_user(payload: UpdateUserRequest) -> AppResult<Json<UserResponse>> {
     println!("Creating user with data: {:#?}", payload);
 
-    Json(response)
+    let user = match payload {
+        UpdateUserRequest {
+            name: Some(name),
+            email: Some(email),
+        } => UserResponse { id: 1, name, email },
+        _ => {
+            return Err(crate::domain::res::AppError::InvalidInput(
+                "Name and email are required".to_string(),
+            ));
+        }
+    };
+
+    Ok(Json(user))
 }
