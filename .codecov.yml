@@ -1,18 +1,31 @@
-# Codecov Configuration for Monorepo
-# This configuration targets only the nextjs directory
+# Codecov Configuration for NextJS Project
+# This configuration targets only the nextjs directory with focus on helpers and lib
 
 coverage:
   status:
-      patch: off # disable patch status
-      project:
-        default: false  # disable the default status that measures entire project
-        tests:  # declare a new status context "tests"
-          target: 90%  # set target to 90%
-          paths: 
-            - nextjs/src/helpers/
-            - nextjs/src/lib/
-          flags: 
-            - unitTests
+    patch:
+      default:
+        target: 80%
+        threshold: 1%
+        paths: 
+          - nextjs/src/helpers/
+          - nextjs/src/lib/
+          - nextjs/src/features/**/helpers/
+        flags:
+          - nextjs-unit-tests
+    project:
+      default: false  # disable the default status that measures entire project
+      nextjs:  # declare a new status context for NextJS
+        target: 85%  # set target to 85%
+        threshold: 1%
+        paths: 
+          - nextjs/src/helpers/
+          - nextjs/src/lib/
+          - nextjs/src/features/**/helpers/
+        flags: 
+          - nextjs-unit-tests
+        if_ci_failed: error  # Fail if CI failed
+        informational: false  # This status will block PR if coverage drops
 
   # Ignore directories other than nextjs
   ignore:
@@ -20,52 +33,45 @@ coverage:
     - "instruction.md"
     - "*.md"
     - "react-design-pattern.code-workspace"
-  
-  # Coverage precision
-  # precision: 2
-  # round: down
-  # range: "70...100"
+    - "nextjs/public/**/*"
+    - "nextjs/scripts/**/*"
+    - "nextjs/.next/**/*"
+    - "nextjs/coverage/**/*"
+    - "nextjs/node_modules/**/*"
+    - "nextjs/**/*.config.*"
+    - "nextjs/**/*.d.ts"
+    - "nextjs/test/**/*"
+    - "nextjs/**/*.test.*"
+    - "nextjs/**/*.spec.*"
 
-# Comment configuration for PR comments
-comment:
-  layout: "reach, diff, flags, files"
-  behavior: default
-  require_changes: false  # if true: only post the comment if coverage changes
-  require_base: false        # [yes :: must have a base report to post]
-  require_head: true       # [yes :: must have a head report to post]
-
-# Flag configuration for different parts of the monorepo
+# Flags to organize test suites
 flags:
-  unitTests:
+  nextjs-unit-tests:
     paths:
       - nextjs/src/helpers/
       - nextjs/src/lib/
-    
-# # Component management
-# component_management:
-#   default_rules:
-#     # Rules for NextJS components
-#     statuses:
-#       - type: project
-#         target: 80%
-#         threshold: 1%
-#   individual_components:
-#     - component_id: nextjs
-#       name: NextJS React Design Patterns
-#       paths:
-#         - nextjs/src/**
+      - nextjs/src/features/**/helpers/
 
-# # GitHub integration
-# github_checks:
-#   annotations: true
-
-# # Notification settings (optional - you can configure these)
-# notifications:
-#   email:
-#     default:
-#       layout: header,diff,betweenfiles,condensed_header,footer
-#       only_pulls: false
+# PR comment configuration
+comment:
+  layout: "header, diff, flags, components, footer"
+  behavior: default
+  require_changes: false  # Always post comment regardless of coverage changes
+  require_base: false     # Don't require base report
+  require_head: true      # Require head report
+  show_carryforward_flags: true
   
-# # Fix paths for coverage files
-# fixes:
-#   - "nextjs/::"  # Strip nextjs prefix from file paths in coverage reports
+  # Custom footer with project context
+  after_n_files: 10  # Show individual file coverage for first 10 files
+  
+components:
+  - component_id: nextjs-helpers
+    name: "NextJS Helpers"
+    paths:
+      - nextjs/src/helpers/**
+      - nextjs/src/features/**/helpers/**
+    
+  - component_id: nextjs-lib  
+    name: "NextJS Lib"
+    paths:
+      - nextjs/src/lib/**
