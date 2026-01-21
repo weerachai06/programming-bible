@@ -9,29 +9,11 @@ coverage:
         tests:  # declare a new status context "tests"
           target: 90%  # set target to 90%
           paths: 
-            - "nextjs/src/helpers"
+            - nextjs/src/helpers/
+            - nextjs/src/lib/
           flags: 
-            - nextjs
-        components:  # declare a new status context "components"
-          target: 85%  # set target to 85%
-          paths: 
-            - nextjs/**/components/  # only include files under "**/components/**"
-          flags: 
-            - nextjs
-        # app:  # declare a new status context "app"
-        #   paths: "!nextjs/src"  # remove all files in "nextjs/src"
-      # project: #add everything under here, more options at https://docs.codecov.com/docs/commit-status
-      #   default:
-      #     # basic
-      #     # target: auto #default
-      #     # threshold: 0%
-      #     target: 80%
-      #     threshold: 1%
-      #     base: auto 
-      #     paths:
-      #       - "nextjs/src"
-      #     flags:
-      #       - nextjs
+            - unitTests
+
   # Ignore directories other than nextjs
   ignore:
     - "rust/**/*"
@@ -54,10 +36,10 @@ comment:
 
 # Flag configuration for different parts of the monorepo
 # flags:
-#   nextjs:
+#   unitTests:
 #     paths:
-#       - nextjs/src/
-#     carryforward: true
+#       - nextjs/src/helpers/
+#       - nextjs/src/lib/
     
 # # Component management
 # component_management:

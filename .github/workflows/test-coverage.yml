@@ -62,20 +62,9 @@ jobs:
       - name: Run unit tests with coverage
         run: pnpm test:coverage
 
-      - name: Upload test results to Codecov
+      - name: Upload coverage reports to Codecov
         if: ${{ !cancelled() }}
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          working-directory: nextjs
-
-      # - name: Upload coverage reports to Codecov
-      #   if: ${{ !cancelled() }}
-      #   uses: codecov/codecov-action@v5
-      #   with:
-      #     token: ${{ secrets.CODECOV_TOKEN }}
-      #     directory: ./nextjs/coverage
-      #     flags: nextjs
-      #     name: nextjs-coverage
-      #     fail_ci_if_error: true
-      #     verbose: true
+          directory: ./nextjs/coverage
