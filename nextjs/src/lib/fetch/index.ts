@@ -54,11 +54,12 @@ class FetchClient {
 
   constructor(config: FetchClientConfig = {}) {
     this.defaults = {
-      baseURL: '',
+      baseURL: config.baseURL || '',
+      timeout: config.timeout,
       headers: {
         'Content-Type': 'application/json',
+        ...config.headers,
       },
-      ...config,
     }
 
     // Initialize interceptor managers
