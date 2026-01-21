@@ -6,9 +6,15 @@ coverage:
       project: #add everything under here, more options at https://docs.codecov.com/docs/commit-status
         default:
           # basic
-          target: auto #default
-          threshold: 0%
+          # target: auto #default
+          # threshold: 0%
+          target: 80%
+          threshold: 1%
           base: auto 
+          paths:
+          - "nextjs/src"
+          flags:
+            - nextjs
   # Ignore directories other than nextjs
   ignore:
     - "rust/**/*"
@@ -20,26 +26,6 @@ coverage:
   precision: 2
   round: down
   range: "70...100"
-
-  # Status checks
-  status:
-    project:
-      default:
-        target: 80%
-        threshold: 1%
-        base: auto
-        paths:
-          - "nextjs/src"
-        flags:
-          - nextjs
-    patch:
-      default:
-        target: 75%
-        threshold: 2%
-        paths:
-          - "nextjs/src"
-        flags:
-          - nextjs
 
 # Comment configuration for PR comments
 comment:
