@@ -49,7 +49,6 @@ comment:
   require_base: false        # [true :: must have a base report to post]
   require_head: true       # [true :: must have a head report to post]
 
-
 # Flag configuration for different parts of the monorepo
 flags:
   nextjs:
