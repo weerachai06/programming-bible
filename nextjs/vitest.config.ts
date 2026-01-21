@@ -25,12 +25,10 @@ export default defineConfig({
         '**/*.spec.*',
       ],
       include: [
-        'src/**/*.{ts,tsx,js,jsx}',
-        // เอาให้รอด
-        // 'src/components/Counter.tsx',
+        'src/helpers/**/*.{ts,tsx,js,jsx}',
+        'src/lib/**/*.{ts,tsx,js,jsx}',
+        'src/features/**/helpers/*.{ts,tsx,js,jsx}',
       ],
-      // Add all: true to ensure all files are included in coverage
-      all: true,
       // Clean coverage directory before each run
       clean: true,
       thresholds: {
