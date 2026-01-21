@@ -68,3 +68,4 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: ./nextjs/coverage
+          flags: unitTests
