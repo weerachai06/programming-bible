@@ -3,12 +3,20 @@
 
 coverage:
   status:
-      patch: "off" # disable patch status
+      patch: off # disable patch status
       project:
         default: false  # disable the default status that measures entire project
         tests:  # declare a new status context "tests"
           target: 90%  # set target to 90%
-          paths: "nextjs/src"  # only include coverage in "nextjs/src" folder
+          paths: 
+            - nextjs/src/lib/     # only include files under "**/lib/**"
+            - nextjs/**/helpers/  # only include files under "**/helpers/**"
+          flags: 
+            - nextjs
+        components:  # declare a new status context "components"
+          target: 85%  # set target to 85%
+          paths: 
+            - nextjs/**/components/  # only include files under "**/components/**"
           flags: 
             - nextjs
         # app:  # declare a new status context "app"
