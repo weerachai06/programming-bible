@@ -35,11 +35,11 @@ comment:
   require_head: true       # [yes :: must have a head report to post]
 
 # Flag configuration for different parts of the monorepo
-# flags:
-#   unitTests:
-#     paths:
-#       - nextjs/src/helpers/
-#       - nextjs/src/lib/
+flags:
+  unitTests:
+    paths:
+      - nextjs/src/helpers/
+      - nextjs/src/lib/
     
 # # Component management
 # component_management:
