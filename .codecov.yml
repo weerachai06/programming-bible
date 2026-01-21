@@ -1,0 +1,82 @@
+# Codecov Configuration for Monorepo
+# This configuration targets only the nextjs directory
+
+coverage:
+  # Ignore directories other than nextjs
+  ignore:
+    - "rust/**/*"
+    - "instruction.md"
+    - "*.md"
+    - "react-design-pattern.code-workspace"
+  
+  # Coverage precision
+  precision: 2
+  round: down
+  range: "70...100"
+
+  # Status checks
+  status:
+    project:
+      default:
+        target: 80%
+        threshold: 1%
+        base: auto
+        paths:
+          - "nextjs/src"
+        flags:
+          - nextjs
+    patch:
+      default:
+        target: 75%
+        threshold: 2%
+        paths:
+          - "nextjs/src"
+        flags:
+          - nextjs
+
+# Comment configuration for PR comments
+comment:
+  layout: "reach,diff,flags,tree"
+  behavior: default
+  require_changes: false
+  require_base: no
+  require_head: yes
+  branches:
+    - "main"
+    - "develop"
+
+# Flag configuration for different parts of the monorepo
+flags:
+  nextjs:
+    paths:
+      - nextjs/src/
+    carryforward: true
+    
+# Component management
+component_management:
+  default_rules:
+    # Rules for NextJS components
+    statuses:
+      - type: project
+        target: 80%
+        threshold: 1%
+  individual_components:
+    - component_id: nextjs
+      name: NextJS React Design Patterns
+      paths:
+        - nextjs/src/**
+
+# GitHub integration
+github_checks:
+  annotations: true
+
+# Notification settings (optional - you can configure these)
+notifications:
+  email:
+    default:
+      layout: header,diff,betweenfiles,condensed_header,footer
+      only_pulls: false
+  
+# Fix paths for coverage files
+fixes:
+  - "nextjs/::"  # Strip nextjs prefix from file paths in coverage reports
