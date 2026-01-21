@@ -9,8 +9,7 @@ coverage:
         tests:  # declare a new status context "tests"
           target: 90%  # set target to 90%
           paths: 
-            - nextjs/src/lib/     # only include files under "**/lib/**"
-            - nextjs/**/helpers/  # only include files under "**/helpers/**"
+            - "nextjs/src/helpers"
           flags: 
             - nextjs
         components:  # declare a new status context "components"
