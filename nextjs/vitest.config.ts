@@ -29,6 +29,10 @@ export default defineConfig({
         // เอาให้รอด
         // 'src/components/Counter.tsx',
       ],
+      // Add all: true to ensure all files are included in coverage
+      all: true,
+      // Clean coverage directory before each run
+      clean: true,
       thresholds: {
         global: {
           branches: 80,
