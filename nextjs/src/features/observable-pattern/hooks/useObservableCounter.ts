@@ -19,6 +19,7 @@ export const useObservableCounter = ({
 
     return () => {
       subscription.unsubscribe()
+      counterObservable.clear()
     }
   }, [isSubscribe])
 

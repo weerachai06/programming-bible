@@ -1,0 +1,11 @@
+/// 🏢 Customer struct: โครงสร้างข้อมูลลูกค้า
+/// ใช้ public fields (pub) เพื่อให้เข้าถึงได้จากภายนอก
+/// แตกต่างจาก Person ที่ใช้ private fields
+pub struct Customer {
+    pub name: String, // 📛 ชื่อลูกค้า (public field)
+    pub age: u8,      // 🎂 อายุลูกค้า (public field, 0-255)
+}
+
+// 💡 หมายเหตุ: struct นี้ไม่มี implementation block (impl)
+// จึงไม่มี methods หรือ associated functions
+// ใช้เป็น plain data structure เท่านั้น

@@ -19,5 +19,11 @@ export const createObservable = <T>() => {
     notify: (value: T) => {
       observers.forEach(observer => observer(value))
     },
+    get size() {
+      return observers.size
+    },
+    clear: () => {
+      observers.clear()
+    },
   }
 }
