@@ -61,17 +61,3 @@ comment:
   require_head: true      # Require head report
   show_carryforward_flags: true
   
-  # Custom footer with project context
-  after_n_files: 10  # Show individual file coverage for first 10 files
-  
-components:
-  - component_id: nextjs-helpers
-    name: "NextJS Helpers"
-    paths:
-      - nextjs/src/helpers/**
-      - nextjs/src/features/**/helpers/**
-    
-  - component_id: nextjs-lib  
-    name: "NextJS Lib"
-    paths:
-      - nextjs/src/lib/**

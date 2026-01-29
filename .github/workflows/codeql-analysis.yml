@@ -30,7 +30,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [javascript]
+        language: [javascript-typescript]
 
     steps:
       - if: github.actor == 'dependabot[bot]' || github.event_name == 'merge_group'
