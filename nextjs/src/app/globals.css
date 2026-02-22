@@ -20,6 +20,7 @@
   overflow: hidden;
 }
 
+
 @theme {
   --color-gray-50: #f9fafb;
   --color-gray-100: #f3f4f6;
@@ -94,13 +95,13 @@
     /* Enable safe area support */
     padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0)
       env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
-    background: #667eea;
   }
 
   /* Reset for this demo */
   * {
     box-sizing: border-box;
   }
+
 }
 
 @theme inline {
@@ -214,7 +215,7 @@
   * {
     @apply border-border outline-ring/50;
   }
-  body {
+  /* body {
     @apply bg-background text-foreground;
-  }
+  } */
 }

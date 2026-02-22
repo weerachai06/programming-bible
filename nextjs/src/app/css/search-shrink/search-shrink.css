@@ -1,0 +1,27 @@
+:root {
+    --nav-height: 6rem;
+}
+
+html:focus-within {
+  scroll-behavior: smooth;
+}
+
+.logo {
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+@supports (animation-timeline: scroll()) {
+    @keyframes shrink {
+        to {
+            width: calc(100% - 72px - 1rem);
+        }
+    }
+
+    @keyframes fade-out-ja {
+        to {
+            opacity: 0;
+            translate: 0 -50%;
+        }
+    }
+}
