@@ -92,12 +92,6 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const count = parseInt(searchParams.get('count') || '8')
   const city = searchParams.get('city')
-  const delay = parseInt(searchParams.get('delay') || '300')
-
-  // Simulate network delay
-  if (delay > 0) {
-    await new Promise(resolve => setTimeout(resolve, delay))
-  }
 
   let weather = generateMockWeather(count)
 
@@ -108,17 +102,12 @@ export async function GET(request: Request) {
     )
   }
 
-  console.log(
-    `🌤️ API: Generating ${weather.length} weather reports with ${delay}ms delay`
-  )
-
   return NextResponse.json(
     {
       data: weather,
       meta: {
         timestamp: new Date().toISOString(),
         count: weather.length,
-        delay,
         filter: city ? { city } : null,
         cache: 'miss',
       },

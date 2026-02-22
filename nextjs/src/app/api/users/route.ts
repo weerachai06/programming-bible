@@ -72,14 +72,6 @@ const generateMockUsers = (count: number): User[] => {
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const count = parseInt(searchParams.get('count') || '25')
-  const delay = parseInt(searchParams.get('delay') || '0')
-
-  // Simulate network delay
-  if (delay > 0) {
-    await new Promise(resolve => setTimeout(resolve, delay))
-  }
-
-  console.log(`🚀 API: Generating ${count} users with ${delay}ms delay`)
 
   return NextResponse.json(
     {
@@ -87,7 +79,6 @@ export async function GET(request: Request) {
       meta: {
         timestamp: new Date().toISOString(),
         count,
-        delay,
         cache: 'miss',
       },
     },

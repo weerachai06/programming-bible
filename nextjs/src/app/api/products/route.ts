@@ -83,12 +83,6 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const count = parseInt(searchParams.get('count') || '20')
   const category = searchParams.get('category')
-  const delay = parseInt(searchParams.get('delay') || '500')
-
-  // Simulate network delay
-  if (delay > 0) {
-    await new Promise(resolve => setTimeout(resolve, delay))
-  }
 
   let products = generateMockProducts(count)
 
@@ -99,17 +93,12 @@ export async function GET(request: Request) {
     )
   }
 
-  console.log(
-    `🛍️ API: Generating ${products.length} products with ${delay}ms delay`
-  )
-
   return NextResponse.json(
     {
       data: products,
       meta: {
         timestamp: new Date().toISOString(),
         count: products.length,
-        delay,
         filter: category ? { category } : null,
         cache: 'miss',
       },

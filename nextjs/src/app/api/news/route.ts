@@ -97,12 +97,6 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const count = parseInt(searchParams.get('count') || '15')
   const category = searchParams.get('category')
-  const delay = parseInt(searchParams.get('delay') || '800')
-
-  // Simulate network delay
-  if (delay > 0) {
-    await new Promise(resolve => setTimeout(resolve, delay))
-  }
 
   let articles = generateMockNews(count)
 
@@ -113,9 +107,7 @@ export async function GET(request: Request) {
     )
   }
 
-  console.log(
-    `📰 API: Generating ${articles.length} news articles with ${delay}ms delay`
-  )
+  console.log(`📰 API: Generating ${articles.length} news articles`)
 
   return NextResponse.json(
     {
@@ -123,7 +115,6 @@ export async function GET(request: Request) {
       meta: {
         timestamp: new Date().toISOString(),
         count: articles.length,
-        delay,
         filter: category ? { category } : null,
         cache: 'miss',
       },
