@@ -1,6 +1,5 @@
 import { unstable_cache } from '@/helpers/asyncCache'
-
-// import { unstable_cache as cache } from "next/cache";
+import { randomUUID } from 'crypto'
 
 interface Pokemon {
   name: string
@@ -21,7 +20,7 @@ const getPokemonList = async (): Promise<PokenInternalInterface> => {
 
   return {
     data: data.results,
-    uuid: Math.random().toString(36).substring(7, 14),
+    uuid: randomUUID(),
   }
 }
 

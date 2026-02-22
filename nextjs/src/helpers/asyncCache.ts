@@ -1,6 +1,6 @@
 import { AsyncLocalStorage } from 'async_hooks'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: any
 type Callback = (...args: any[]) => Promise<any>
 
 interface CacheStore {
@@ -34,8 +34,7 @@ const unstable_cache = <T extends Callback>(
   callback: T,
   config: CacheConfig = { maxSize: 100, revalidate: MINITE_REVALIDATE }
 ) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const cachedCallback = async (...args: any[]) => {
+  const cachedCallback = async (...args: unknown[]) => {
     try {
       const store = staticGenerationAsyncStorage.getStore() || cache
       const nowSecond = Date.now() / 1000
