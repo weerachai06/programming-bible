@@ -28,5 +28,10 @@ const handler = new MessageHandler({
 })
 
 globalThis.onmessage = function (e) {
-  handler.handle(e)
+  const origin = typeof e.origin === 'string' ? e.origin : ''
+  const trustedOrigins = ['https://www.example.com']
+
+  if (trustedOrigins.includes(origin)) {
+    handler.handle(e)
+  }
 }
