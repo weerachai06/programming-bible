@@ -8,14 +8,14 @@ describe('FetchClient', () => {
     global.setTimeout = vi.fn((cb, delay) => {
       setTimeout(cb, delay)
       return 123 as any
-    })
+    }) as any
     global.clearTimeout = vi.fn()
   })
 
   describe('constructor', () => {
     it('should initialize with default config', () => {
       const client = new FetchClient()
-      
+
       expect(client.defaults).toEqual({
         baseURL: '',
         headers: {
@@ -29,15 +29,15 @@ describe('FetchClient', () => {
     it('should merge custom config with defaults', () => {
       const config = {
         baseURL: 'https://api.example.com',
-        headers: { 'Authorization': 'Bearer token' },
+        headers: { Authorization: 'Bearer token' },
         timeout: 5000,
       }
       const client = new FetchClient(config)
-      
+
       expect(client.defaults).toEqual({
         baseURL: 'https://api.example.com',
         headers: {
-          'Authorization': 'Bearer token',
+          Authorization: 'Bearer token',
           'Content-Type': 'application/json',
         },
         timeout: 5000,
@@ -48,10 +48,10 @@ describe('FetchClient', () => {
   describe('interceptor management', () => {
     it('should add request interceptors', () => {
       const client = new FetchClient()
-      const interceptor = vi.fn((config) => config)
-      
+      const interceptor = vi.fn(config => config)
+
       const id = client.interceptors.request.use(interceptor)
-      
+
       expect(typeof id).toBe('number')
       expect(client.interceptors.request.handlers[id]).toEqual({
         fulfilled: interceptor,
@@ -61,10 +61,10 @@ describe('FetchClient', () => {
 
     it('should add response interceptors', () => {
       const client = new FetchClient()
-      const interceptor = vi.fn((response) => response)
-      
+      const interceptor = vi.fn(response => response)
+
       const id = client.interceptors.response.use(interceptor)
-      
+
       expect(client.interceptors.response.handlers[id]).toEqual({
         fulfilled: interceptor,
         rejected: undefined,
@@ -74,10 +74,10 @@ describe('FetchClient', () => {
     it('should remove interceptors', () => {
       const client = new FetchClient()
       const interceptor = vi.fn()
-      
+
       const id = client.interceptors.request.use(interceptor)
       client.interceptors.request.eject(id)
-      
+
       expect(client.interceptors.request.handlers[id]).toBeNull()
     })
   })
@@ -87,9 +87,9 @@ describe('FetchClient', () => {
       const client = new FetchClient()
       const mockResponse = new Response('{}', { status: 200 })
       vi.mocked(global.fetch).mockResolvedValue(mockResponse)
-      
+
       const response = await client.request('/test')
-      
+
       expect(global.fetch).toHaveBeenCalledWith('/test', {
         baseURL: '',
         headers: {
@@ -103,60 +103,69 @@ describe('FetchClient', () => {
       const client = new FetchClient({ baseURL: 'https://api.example.com' })
       const mockResponse = new Response('{}', { status: 200 })
       vi.mocked(global.fetch).mockResolvedValue(mockResponse)
-      
+
       await client.request('/test')
-      
-      expect(global.fetch).toHaveBeenCalledWith('https://api.example.com/test', expect.any(Object))
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        'https://api.example.com/test',
+        expect.any(Object)
+      )
     })
 
     it('should not modify absolute URLs with baseURL', async () => {
       const client = new FetchClient({ baseURL: 'https://api.example.com' })
       const mockResponse = new Response('{}', { status: 200 })
       vi.mocked(global.fetch).mockResolvedValue(mockResponse)
-      
+
       await client.request('https://other.com/test')
-      
-      expect(global.fetch).toHaveBeenCalledWith('https://other.com/test', expect.any(Object))
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        'https://other.com/test',
+        expect.any(Object)
+      )
     })
 
     it('should run request interceptors', async () => {
       const client = new FetchClient()
       const mockResponse = new Response('{}', { status: 200 })
       vi.mocked(global.fetch).mockResolvedValue(mockResponse)
-      
-      const interceptor = vi.fn((config) => ({
+
+      const interceptor = vi.fn(config => ({
         ...config,
-        headers: { ...config.headers, 'X-Custom': 'test' }
+        headers: { ...config.headers, 'X-Custom': 'test' },
       }))
       client.interceptors.request.use(interceptor)
-      
+
       await client.request('/test')
-      
+
       expect(interceptor).toHaveBeenCalled()
-      expect(global.fetch).toHaveBeenCalledWith('/test', expect.objectContaining({
-        headers: expect.objectContaining({
-          'X-Custom': 'test'
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/test',
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            'X-Custom': 'test',
+          }),
         })
-      }))
+      )
     })
 
     it('should run response interceptors', async () => {
       const client = new FetchClient()
       const mockResponse = new Response('{}', { status: 200 })
       vi.mocked(global.fetch).mockResolvedValue(mockResponse)
-      
-      const interceptor = vi.fn((response) => response)
+
+      const interceptor = vi.fn(response => response)
       client.interceptors.response.use(interceptor)
-      
+
       await client.request('/test')
-      
+
       expect(interceptor).toHaveBeenCalledWith(mockResponse)
     })
 
     it('should handle timeout', async () => {
       const client = new FetchClient({ timeout: 1000 })
       vi.mocked(global.fetch).mockImplementation(() => new Promise(() => {}))
-      
+
       await expect(client.request('/test')).rejects.toThrow()
       expect(global.setTimeout).toHaveBeenCalledWith(expect.any(Function), 1000)
     })
@@ -167,62 +176,77 @@ describe('FetchClient', () => {
       const client = new FetchClient()
       const mockResponse = new Response('{}', { status: 200 })
       vi.mocked(global.fetch).mockResolvedValue(mockResponse)
-      
+
       await client.get('/test')
-      
-      expect(global.fetch).toHaveBeenCalledWith('/test', expect.objectContaining({
-        method: 'GET'
-      }))
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/test',
+        expect.objectContaining({
+          method: 'GET',
+        })
+      )
     })
 
     it('should make POST requests with data', async () => {
       const client = new FetchClient()
       const mockResponse = new Response('{}', { status: 201 })
       vi.mocked(global.fetch).mockResolvedValue(mockResponse)
-      
+
       const data = { name: 'test' }
       await client.post('/test', data)
-      
-      expect(global.fetch).toHaveBeenCalledWith('/test', expect.objectContaining({
-        method: 'POST',
-        body: JSON.stringify(data)
-      }))
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/test',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify(data),
+        })
+      )
     })
 
     it('should make PUT requests', async () => {
       const client = new FetchClient()
       const mockResponse = new Response('{}', { status: 200 })
       vi.mocked(global.fetch).mockResolvedValue(mockResponse)
-      
+
       await client.put('/test', { id: 1 })
-      
-      expect(global.fetch).toHaveBeenCalledWith('/test', expect.objectContaining({
-        method: 'PUT'
-      }))
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/test',
+        expect.objectContaining({
+          method: 'PUT',
+        })
+      )
     })
 
     it('should make DELETE requests', async () => {
       const client = new FetchClient()
       const mockResponse = new Response(null, { status: 204 })
       vi.mocked(global.fetch).mockResolvedValue(mockResponse)
-      
+
       await client.delete('/test/1')
-      
-      expect(global.fetch).toHaveBeenCalledWith('/test/1', expect.objectContaining({
-        method: 'DELETE'
-      }))
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/test/1',
+        expect.objectContaining({
+          method: 'DELETE',
+        })
+      )
     })
 
     it('should make PATCH requests', async () => {
       const client = new FetchClient()
       const mockResponse = new Response('{}', { status: 200 })
       vi.mocked(global.fetch).mockResolvedValue(mockResponse)
-      
+
       await client.patch('/test/1', { name: 'updated' })
-      
-      expect(global.fetch).toHaveBeenCalledWith('/test/1', expect.objectContaining({
-        method: 'PATCH'
-      }))
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/test/1',
+        expect.objectContaining({
+          method: 'PATCH',
+        })
+      )
     })
   })
 
@@ -232,9 +256,9 @@ describe('FetchClient', () => {
       const responseData = { id: 1, name: 'test' }
       const mockResponse = new Response(JSON.stringify(responseData))
       vi.mocked(global.fetch).mockResolvedValue(mockResponse)
-      
+
       const result = await client.getJSON('/test')
-      
+
       expect(result).toEqual(responseData)
     })
 
@@ -243,14 +267,14 @@ describe('FetchClient', () => {
       const responseData = { id: 1, name: 'test' }
       const mockResponse = new Response(JSON.stringify(responseData))
       vi.mocked(global.fetch).mockResolvedValue(mockResponse)
-      
+
       interface TestResponse {
         id: number
         name: string
       }
-      
+
       const result = await client.getJSON<TestResponse>('/test')
-      
+
       expect(result).toEqual(responseData)
     })
   })
@@ -260,7 +284,7 @@ describe('FetchClient', () => {
       const client = new FetchClient()
       const error = new Error('Network error')
       vi.mocked(global.fetch).mockRejectedValue(error)
-      
+
       await expect(client.request('/test')).rejects.toThrow('Network error')
     })
 
@@ -269,7 +293,7 @@ describe('FetchClient', () => {
       const error = new Error('Interceptor error')
       const interceptor = vi.fn().mockRejectedValue(error)
       client.interceptors.request.use(interceptor)
-      
+
       await expect(client.request('/test')).rejects.toThrow('Interceptor error')
     })
 
@@ -277,12 +301,14 @@ describe('FetchClient', () => {
       const client = new FetchClient()
       const mockResponse = new Response('{}', { status: 200 })
       vi.mocked(global.fetch).mockResolvedValue(mockResponse)
-      
+
       const error = new Error('Response interceptor error')
       const interceptor = vi.fn().mockRejectedValue(error)
       client.interceptors.response.use(interceptor)
-      
-      await expect(client.request('/test')).rejects.toThrow('Response interceptor error')
+
+      await expect(client.request('/test')).rejects.toThrow(
+        'Response interceptor error'
+      )
     })
   })
 
