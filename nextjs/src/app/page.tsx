@@ -37,6 +37,12 @@ const REACT_DESIGN_PATTERNS = [
       'A pattern that allows you to intercept network requests and cache responses for offline use.',
     link: '/sw-cache',
   },
+  {
+    name: 'Product Category Page',
+    description:
+      'Mock product category page demonstrating dynamic routing, Suspense with skeleton fallback, and a simulated async API fetch.',
+    link: '/products/electronics',
+  },
 ] as const
 
 export default function Home() {
