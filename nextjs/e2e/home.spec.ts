@@ -13,15 +13,19 @@ test.describe('Home page', () => {
     await page.goto('/')
 
     const links = page.getByRole('link')
-    await expect(links).toHaveCount(7)
+    await expect(links).toHaveCount(8)
   })
 
   test('should navigate to the lorem pages from the home link', async ({ page }) => {
     await page.goto('/')
 
-    await page.getByRole('link', { name: /lorem ipsum pages/i }).click()
+    const [popup] = await Promise.all([
+      page.waitForEvent('popup'),
+      page.getByRole('link', { name: /lorem ipsum pages/i }).click(),
+    ])
 
-    await expect(page).toHaveURL('/lorem/about')
-    await expect(page.getByRole('heading', { name: 'About Us' })).toBeVisible()
+    await popup.waitForLoadState()
+    await expect(popup).toHaveURL('/lorem/about')
+    await expect(popup.getByRole('heading', { name: 'About Us' })).toBeVisible()
   })
 })

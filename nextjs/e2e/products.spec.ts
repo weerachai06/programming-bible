@@ -29,7 +29,7 @@ test.describe('Product category page', () => {
 
     await expect(page.getByRole('navigation').getByRole('link', { name: 'Home' })).toBeVisible()
     await expect(page.getByRole('navigation').getByRole('link', { name: 'Products' })).toBeVisible()
-    await expect(page.getByText('Clothing')).toBeVisible()
+    await expect(page.getByRole('navigation').getByText('Clothing')).toBeVisible()
   })
 
   test('should return 404 for unknown category', async ({ page }) => {
