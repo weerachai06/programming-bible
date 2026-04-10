@@ -43,6 +43,12 @@ const REACT_DESIGN_PATTERNS = [
       'Mock product category page demonstrating dynamic routing, Suspense with skeleton fallback, and a simulated async API fetch.',
     link: '/products/electronics',
   },
+  {
+    name: 'Lorem Ipsum Pages',
+    description:
+      'Ten mock pages grouped under the /lorem route — About, Blog, Contact, FAQ, Pricing, Services, Team, Terms, Privacy, and Careers.',
+    link: '/lorem/about',
+  },
 ] as const
 
 export default function Home() {
