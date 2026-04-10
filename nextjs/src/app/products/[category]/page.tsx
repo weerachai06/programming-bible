@@ -1,49 +1,27 @@
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { CATEGORIES } from '@/app/api/products/mock-data'
-import type { Product, CategoryMeta } from '@/app/api/products/mock-data'
+import { CATEGORIES, fetchProductsByCategory } from '@/app/api/products/mock-data'
 import ProductCard from './_component/ProductCard'
 import ProductGridSkeleton from './_component/ProductGridSkeleton'
 
-type ApiResponse = {
-  data: Product[]
-  meta: {
-    category: CategoryMeta
-    count: number
-    timestamp: string
-  }
-}
-
 /**
- * Server component that fetches products for a given category from the mock API.
- * Uses Next.js fetch with cache tags for fine-grained revalidation.
+ * Server component that fetches products for a given category directly
+ * from the mock data layer — safe for static prerendering at build time.
  */
 async function ProductGrid({ category }: { category: string }) {
-  const res = await fetch(
-    `http://localhost:3000/api/products/${category}`,
-    {
-      next: {
-        tags: [`products-${category}`],
-        revalidate: 60,
-      },
-    },
-  )
+  const result = await fetchProductsByCategory(category)
 
-  if (!res.ok) {
-    notFound()
-  }
-
-  const json: ApiResponse = await res.json()
+  if (!result) notFound()
 
   return (
     <div className="flex flex-col gap-4">
       <p className="text-sm text-gray-500">
-        {json.meta.count} products &middot; Last updated:{' '}
-        {new Date(json.meta.timestamp).toLocaleString('th-TH')}
+        {result.products.length} products &middot; Last updated:{' '}
+        {new Date().toLocaleString('th-TH')}
       </p>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {json.data.map(product => (
+        {result.products.map(product => (
           <ProductCard key={product.id} product={product} />
         ))}
       </div>
