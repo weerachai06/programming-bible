@@ -18,21 +18,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: './nextjs/.nvmrc'
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
         with:
           version: ${{ env.PNPM_VERSION }}
-          cache: true
-          cache_dependency_path: './nextjs/pnpm-lock.yaml'
-
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: './nextjs/.nvmrc'
+          cache: 'pnpm'
+          cache-dependency-path: './nextjs/pnpm-lock.yaml'
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
         working-directory: ./nextjs
@@ -43,25 +37,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: './nextjs/.nvmrc'
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
         with:
           version: ${{ env.PNPM_VERSION }}
-          cache: true
-          cache_dependency_path: './nextjs/pnpm-lock.yaml'
-
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: './nextjs/.nvmrc'
+          cache: 'pnpm'
+          cache-dependency-path: './nextjs/pnpm-lock.yaml'
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
         working-directory: ./nextjs
-
       - name: Run tests
         run: pnpm test:run
         working-directory: ./nextjs
@@ -72,25 +59,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: './nextjs/.nvmrc'
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
         with:
           version: ${{ env.PNPM_VERSION }}
-          cache: true
-          cache_dependency_path: './nextjs/pnpm-lock.yaml'
-
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: './nextjs/.nvmrc'
+          cache: 'pnpm'
+          cache-dependency-path: './nextjs/pnpm-lock.yaml'
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
         working-directory: ./nextjs
-
       - name: Run linter
         run: pnpm lint
         working-directory: ./nextjs
@@ -101,25 +81,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: './nextjs/.nvmrc'
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
         with:
           version: ${{ env.PNPM_VERSION }}
-          cache: true
-          cache_dependency_path: './nextjs/pnpm-lock.yaml'
-
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: './nextjs/.nvmrc'
+          cache: 'pnpm'
+          cache-dependency-path: './nextjs/pnpm-lock.yaml'
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
         working-directory: ./nextjs
-
       - name: Run type checker
         run: pnpm jsdoc:check
         working-directory: ./nextjs
