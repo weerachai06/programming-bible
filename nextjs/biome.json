@@ -146,6 +146,20 @@
           }
         }
       }
+    },
+    {
+      "includes": ["e2e/**/*"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noUnusedVariables": "off",
+            "noUnusedImports": "off"
+          },
+          "suspicious": {
+            "noExplicitAny": "off"
+          }
+        }
+      }
     }
   ]
 }
