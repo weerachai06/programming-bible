@@ -24,9 +24,9 @@ jobs:
           node-version-file: './nextjs/.nvmrc'
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
-          version: '8.19.0'
+          version: '8.15.9'
 
       - name: Get pnpm store directory
         id: pnpm-cache
@@ -35,7 +35,7 @@ jobs:
           echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
       - name: Setup pnpm cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
           key: ${{ runner.os }}-pnpm-store-test-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -64,9 +64,9 @@ jobs:
           node-version-file: './nextjs/.nvmrc'
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
-          version: '8.19.0'
+          version: '8.15.9'
 
       - name: Get pnpm store directory
         id: pnpm-cache
@@ -75,7 +75,7 @@ jobs:
           echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
       - name: Setup pnpm cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
           key: ${{ runner.os }}-pnpm-store-lint-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -104,9 +104,9 @@ jobs:
           node-version-file: './nextjs/.nvmrc'
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
-          version: '8.19.0'
+          version: '8.15.9'
 
       - name: Get pnpm store directory
         id: pnpm-cache
@@ -115,7 +115,7 @@ jobs:
           echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
       - name: Setup pnpm cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
           key: ${{ runner.os }}-pnpm-store-typecheck-${{ hashFiles('**/pnpm-lock.yaml') }}
