@@ -10,10 +10,12 @@ on:
       - develop
 
 jobs:
-  test:
-    name: Unit Tests
+  prepare:
+    name: Install & Cache Dependencies
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
+    outputs:
+      store-path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -38,7 +40,38 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-test-${{ hashFiles('**/pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: ./nextjs
+
+  test:
+    name: Unit Tests
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: './nextjs/.nvmrc'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: '10.8.1'
+
+      - name: Restore pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ needs.prepare.outputs.store-path }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
@@ -52,6 +85,7 @@ jobs:
 
   lint:
     name: Linting
+    needs: prepare
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -68,17 +102,11 @@ jobs:
         with:
           version: '10.8.1'
 
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-      - name: Setup pnpm cache
+      - name: Restore pnpm cache
         uses: actions/cache@v4
         with:
-          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-lint-${{ hashFiles('**/pnpm-lock.yaml') }}
+          path: ${{ needs.prepare.outputs.store-path }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
@@ -92,6 +120,7 @@ jobs:
 
   typecheck:
     name: Type Checking
+    needs: prepare
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -108,17 +137,11 @@ jobs:
         with:
           version: '10.8.1'
 
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-      - name: Setup pnpm cache
+      - name: Restore pnpm cache
         uses: actions/cache@v4
         with:
-          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-typecheck-${{ hashFiles('**/pnpm-lock.yaml') }}
+          path: ${{ needs.prepare.outputs.store-path }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
