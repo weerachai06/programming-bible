@@ -43,10 +43,10 @@ is_valid_index_file() {
     return 1  # Invalid
 }
 
-# Check if file is a route file
+# Check if file is a route file (excludes dynamic segments like [param] or [...param])
 is_route_file() {
     local file_path="$1"
-    [[ "$file_path" =~ route\.ts$ ]]
+    [[ "$file_path" =~ route\.ts$ ]] && [[ ! "$file_path" =~ \[ ]]
 }
 
 # Find and format entry files as JSON array
