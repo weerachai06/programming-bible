@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react'
 
 const getBrowserName = (ua: string): string => {
+  if (/FBAN|FBAV|FB_IAB|FB4AN|FBIOS/i.test(ua)) return 'Facebook (in-app browser)'
+  if (/Instagram/i.test(ua)) return 'Instagram (in-app browser)'
+  if (/Line\//i.test(ua)) return 'LINE (in-app browser)'
   if (/edg\//i.test(ua)) return 'Microsoft Edge'
   if (/opr\//i.test(ua) || /opera/i.test(ua)) return 'Opera'
   if (/firefox\//i.test(ua)) return 'Firefox'
@@ -15,9 +18,12 @@ export default function SharePage() {
   const [status, setStatus] = useState<string | null>(null)
   const [canShare, setCanShare] = useState<boolean | null>(null)
   const [browserName, setBrowserName] = useState<string>('')
+  const [rawUa, setRawUa] = useState<string>('')
 
   useEffect(() => {
-    setBrowserName(getBrowserName(navigator.userAgent))
+    const ua = navigator.userAgent
+    setRawUa(ua)
+    setBrowserName(getBrowserName(ua))
     setCanShare(typeof navigator !== 'undefined' && !!navigator.share)
   }, [])
 
@@ -45,6 +51,12 @@ export default function SharePage() {
       <p className="text-sm text-gray-400">
         เบราว์เซอร์ของคุณ: <span className="font-medium">{browserName || 'กำลังตรวจสอบ...'}</span>
       </p>
+      {rawUa && (
+        <details className="max-w-2xl text-xs text-gray-400">
+          <summary className="cursor-pointer">User-Agent (debug)</summary>
+          <code className="mt-2 block break-all rounded bg-gray-100 p-2 text-left">{rawUa}</code>
+        </details>
+      )}
       {canShare && (
         <button
           type="button"
