@@ -32,6 +32,7 @@ export default function SharePage() {
       <h1 className="text-2xl font-bold">Share Demo</h1>
       <p className="text-gray-500">ใช้ System Share ของเบราว์เซอร์/OS</p>
       <button
+        type="button"
         onClick={handleShare}
         className="rounded-lg bg-blue-600 px-6 py-3 text-white hover:bg-blue-700"
       >
