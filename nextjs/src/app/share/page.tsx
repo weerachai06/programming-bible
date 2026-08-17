@@ -1,9 +1,25 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+
+const getBrowserName = (ua: string): string => {
+  if (/edg\//i.test(ua)) return 'Microsoft Edge'
+  if (/opr\//i.test(ua) || /opera/i.test(ua)) return 'Opera'
+  if (/firefox\//i.test(ua)) return 'Firefox'
+  if (/chrome\//i.test(ua) && !/edg\//i.test(ua)) return 'Chrome'
+  if (/safari\//i.test(ua) && !/chrome\//i.test(ua)) return 'Safari'
+  return 'เบราว์เซอร์นี้'
+}
 
 export default function SharePage() {
   const [status, setStatus] = useState<string | null>(null)
+  const [canShare, setCanShare] = useState<boolean | null>(null)
+  const [browserName, setBrowserName] = useState<string>('')
+
+  useEffect(() => {
+    setBrowserName(getBrowserName(navigator.userAgent))
+    setCanShare(typeof navigator !== 'undefined' && !!navigator.share)
+  }, [])
 
   const shareData = {
     title: 'Programming Bible',
@@ -12,18 +28,13 @@ export default function SharePage() {
   }
 
   const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share(shareData)
-        setStatus('แชร์สำเร็จ')
-      } catch (err) {
-        if ((err as Error).name !== 'AbortError') {
-          setStatus('แชร์ไม่สำเร็จ')
-        }
+    try {
+      await navigator.share(shareData)
+      setStatus('แชร์สำเร็จ')
+    } catch (err) {
+      if ((err as Error).name !== 'AbortError') {
+        setStatus('แชร์ไม่สำเร็จ')
       }
-    } else {
-      await navigator.clipboard.writeText(shareData.url)
-      setStatus('เบราว์เซอร์นี้ไม่รองรับ Web Share API — คัดลอกลิงก์แล้ว')
     }
   }
 
@@ -31,13 +42,23 @@ export default function SharePage() {
     <main className="flex min-h-screen flex-col items-center justify-center gap-4 p-8">
       <h1 className="text-2xl font-bold">Share Demo</h1>
       <p className="text-gray-500">ใช้ System Share ของเบราว์เซอร์/OS</p>
-      <button
-        type="button"
-        onClick={handleShare}
-        className="rounded-lg bg-blue-600 px-6 py-3 text-white hover:bg-blue-700"
-      >
-        แชร์
-      </button>
+      <p className="text-sm text-gray-400">
+        เบราว์เซอร์ของคุณ: <span className="font-medium">{browserName || 'กำลังตรวจสอบ...'}</span>
+      </p>
+      {canShare && (
+        <button
+          type="button"
+          onClick={handleShare}
+          className="rounded-lg bg-blue-600 px-6 py-3 text-white hover:bg-blue-700"
+        >
+          แชร์
+        </button>
+      )}
+      {canShare === false && (
+        <p className="text-sm text-gray-500">
+          {browserName} ไม่รองรับ Web Share API — ปุ่มแชร์ถูกซ่อน
+        </p>
+      )}
       {status && <p className="text-sm text-gray-600">{status}</p>}
     </main>
   )
